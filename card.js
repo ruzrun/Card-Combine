@@ -505,61 +505,17 @@ function spawnCard() {
    RENDER BOARD
 ========================= */
 
-function renderBoard() {
-
-    gameBoard.innerHTML = "";
-
-
-    board.forEach(
-        (value, index) => {
-
-            const cell =
-                document.createElement("div");
-
-
-            cell.className =
-                "board-cell";
-
-
-            if (value !== 0) {
-
-                const card =
-                    document.createElement("div");
-
-
-                card.className =
-                    "card";
-
-
-                card.dataset.value =
-                    value;
-
-
-                card.textContent =
-                    value;
-
-
-                cell.appendChild(card);
-
-            } else {
-
-                cell.classList.add(
-                    "empty"
-                );
-
-            }
-
-
-            gameBoard.appendChild(cell);
-
-        }
-    );
-
+#gameBoard {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior: contain;
 }
 
 
+
 /* =========================
-   MOVE BOARD
+   ANIMATED MOVE
 ========================= */
 
 function move(direction) {
@@ -568,127 +524,87 @@ function move(direction) {
         return;
     }
 
+    /*
+        Don't allow another move
+        while cards are animating.
+    */
 
-    let moved = false;
+    if (gameBoard.classList.contains("moving")) {
+        return;
+    }
 
-    let totalMerged = 0;
+    gameBoard.classList.add("moving");
 
 
     /*
-        Convert board into rows
-        depending on direction.
+        Save the board before moving.
     */
 
-    const lines =
-        getLines(direction);
-
-
-    const newBoard =
-        Array(CELLS).fill(0);
-
-
-    lines.forEach(
-        (line, lineIndex) => {
-
-            const values =
-                line.map(
-                    index =>
-                        board[index]
-                );
-
-
-            const result =
-                slideAndMerge(values);
-
-
-            /*
-                Put result back into
-                the correct positions.
-            */
-
-            result.values.forEach(
-                (value, position) => {
-
-                    newBoard[
-                        line[position]
-                    ] = value;
-
-                }
-            );
-
-
-            if (result.moved) {
-
-                moved = true;
-
-            }
-
-
-            totalMerged +=
-                result.merged;
-
-        }
-    );
-
-
-    board =
-        newBoard;
+    const oldBoard = [...board];
 
 
     /*
-        Combo is based on how
-        many combinations happened.
+        Calculate the new board
+        and remember every card's
+        movement.
     */
 
-    if (totalMerged > 0) {
+    const movement =
+        calculateMove(direction);
 
-        combo =
-            totalMerged;
 
-        gameMessage.textContent =
-            `✨ COMBO ×${combo}!`;
+    /*
+        Nothing changes?
 
-    } else {
+        IMPORTANT:
+        We STILL spawn a card,
+        because that's our custom rule.
+    */
+
+    if (!movement.changed) {
+
+        spawnCard();
 
         combo = 0;
 
         gameMessage.textContent =
-            "Cards shifted ✨";
+            "No movement... but a new card appeared! 🃏";
 
+        updateScore();
+
+        updateNextCard();
+
+        renderBoard();
+
+        gameBoard.classList.remove("moving");
+
+        if (isGameOver()) {
+            endGame();
+        }
+
+        return;
     }
 
 
     /*
-        IMPORTANT:
-        A new card ALWAYS spawns
-        after every swipe.
-
-        Even if nothing moved.
+        Show the old board first.
     */
 
-    spawnCard();
-
-
-    updateScore();
-
-    updateNextCard();
+    board = oldBoard;
 
     renderBoard();
 
 
     /*
-        Check game over AFTER
-        the new card appears.
+        Animate the cards.
     */
 
-    if (isGameOver()) {
-
-        endGame();
-
-    }
+    animateMovement(
+        movement,
+        direction
+    );
 
 }
-
 
 /* =========================
    SLIDE + MERGE
@@ -1284,3 +1200,482 @@ restartButton.addEventListener(
 ========================= */
 
 startGame();
+
+/* =========================
+   CALCULATE MOVE
+========================= */
+
+function calculateMove(direction) {
+
+    const newBoard =
+        Array(CELLS).fill(0);
+
+    const movements = [];
+
+    let changed = false;
+
+    let mergedCount = 0;
+
+
+    const lines =
+        getLines(direction);
+
+
+    lines.forEach(line => {
+
+        /*
+            Get all cards that
+            actually exist.
+        */
+
+        const cards = [];
+
+        line.forEach(index => {
+
+            if (board[index] !== 0) {
+
+                cards.push({
+                    value: board[index],
+                    from: index
+                });
+
+            }
+
+        });
+
+
+        /*
+            Process this line.
+        */
+
+        let targetPosition = 0;
+
+
+        for (
+            let i = 0;
+            i < cards.length;
+            i++
+        ) {
+
+            const current =
+                cards[i];
+
+
+            /*
+                Check if this card can
+                merge with the next card.
+            */
+
+            if (
+                i + 1 < cards.length &&
+                current.value ===
+                cards[i + 1].value
+            ) {
+
+                const next =
+                    cards[i + 1];
+
+
+                const destination =
+                    line[targetPosition];
+
+
+                const mergedValue =
+                    current.value * 2;
+
+
+                /*
+                    First card moves
+                    to destination.
+                */
+
+                movements.push({
+                    from: current.from,
+                    to: destination,
+                    value: current.value,
+                    merge: true,
+                    mergedValue: mergedValue
+                });
+
+
+                /*
+                    Second card also moves
+                    to the same destination.
+                */
+
+                movements.push({
+                    from: next.from,
+                    to: destination,
+                    value: next.value,
+                    merge: true,
+                    mergedValue: mergedValue
+                });
+
+
+                newBoard[destination] =
+                    mergedValue;
+
+
+                score += mergedValue;
+
+                mergedCount++;
+
+                changed = true;
+
+
+                i++;
+
+                targetPosition++;
+
+            } else {
+
+                const destination =
+                    line[targetPosition];
+
+
+                movements.push({
+                    from: current.from,
+                    to: destination,
+                    value: current.value,
+                    merge: false
+                });
+
+
+                newBoard[destination] =
+                    current.value;
+
+
+                if (
+                    current.from !==
+                    destination
+                ) {
+
+                    changed = true;
+
+                }
+
+
+                targetPosition++;
+
+            }
+
+        }
+
+    });
+
+
+    return {
+        board: newBoard,
+        movements: movements,
+        changed: changed,
+        merged: mergedCount
+    };
+
+}
+
+/* =========================
+   ANIMATE MOVEMENT
+========================= */
+
+function animateMovement(
+    movement,
+    direction
+) {
+
+    const cells =
+        [...gameBoard.children];
+
+
+    const boardRect =
+        gameBoard.getBoundingClientRect();
+
+
+    /*
+        Calculate the size of
+        each board cell.
+    */
+
+    const firstCell =
+        cells[0].getBoundingClientRect();
+
+
+    const cellWidth =
+        firstCell.width;
+
+
+    const cellHeight =
+        firstCell.height;
+
+
+    /*
+        Create visual copies
+        of every moving card.
+    */
+
+    const movingCards = [];
+
+
+    movement.movements.forEach(
+        item => {
+
+            const sourceCell =
+                cells[item.from];
+
+
+            const sourceRect =
+                sourceCell.getBoundingClientRect();
+
+
+            const card =
+                document.createElement("div");
+
+
+            card.className =
+                "moving-card";
+
+
+            card.textContent =
+                item.value;
+
+
+            card.style.width =
+                `${sourceRect.width}px`;
+
+
+            card.style.height =
+                `${sourceRect.height}px`;
+
+
+            /*
+                Position the card
+                exactly over its
+                original cell.
+            */
+
+            card.style.left =
+                `${sourceRect.left - boardRect.left}px`;
+
+
+            card.style.top =
+                `${sourceRect.top - boardRect.top}px`;
+
+
+            gameBoard.appendChild(card);
+
+
+            movingCards.push({
+                element: card,
+                item: item
+            });
+
+        }
+    );
+
+
+    /*
+        Hide the normal board cards
+        while the animation happens.
+    */
+
+    cells.forEach(cell => {
+
+        const normalCard =
+            cell.querySelector(".card");
+
+        if (normalCard) {
+
+            normalCard.style.visibility =
+                "hidden";
+
+        }
+
+    });
+
+
+    /*
+        Force browser to register
+        starting positions.
+    */
+
+    void gameBoard.offsetWidth;
+
+
+    /*
+        Move every card to its
+        destination.
+    */
+
+    movingCards.forEach(
+        moving => {
+
+            const item =
+                moving.item;
+
+
+            const fromRow =
+                Math.floor(
+                    item.from / SIZE
+                );
+
+
+            const fromCol =
+                item.from % SIZE;
+
+
+            const toRow =
+                Math.floor(
+                    item.to / SIZE
+                );
+
+
+            const toCol =
+                item.to % SIZE;
+
+
+            const moveX =
+                (toCol - fromCol) *
+                cellWidth;
+
+
+            const moveY =
+                (toRow - fromRow) *
+                cellHeight;
+
+
+            moving.element.style.transform =
+                `translate(${moveX}px, ${moveY}px)`;
+
+        }
+    );
+
+
+    /*
+        Wait for the movement
+        animation to finish.
+    */
+
+    setTimeout(() => {
+
+        /*
+            Now display the new board.
+        */
+
+        board =
+            movement.board;
+
+
+        /*
+            Spawn a card AFTER
+            the movement finishes.
+        */
+
+        spawnCard();
+
+
+        /*
+            Update combo.
+        */
+
+        if (
+            movement.merged > 0
+        ) {
+
+            combo =
+                movement.merged;
+
+
+            gameMessage.textContent =
+                `✨ COMBO ×${combo}!`;
+
+        } else {
+
+            combo = 0;
+
+            gameMessage.textContent =
+                "Cards shifted ✨";
+
+        }
+
+
+        updateScore();
+
+        updateNextCard();
+
+
+        /*
+            Render the final board.
+        */
+
+        renderBoard();
+
+
+        /*
+            Find cards that just
+            appeared and give them
+            a small animation.
+        */
+
+        const finalCells =
+            [...gameBoard.children];
+
+
+        const newCardIndex =
+            board.findIndex(
+                value =>
+                    value !== 0 &&
+                    !movement.movements.some(
+                        item =>
+                            item.to ===
+                            board.indexOf(value)
+                    )
+            );
+
+
+        /*
+            Give the newly spawned
+            card the pop animation.
+        */
+
+        if (
+            newCardIndex !== -1
+        ) {
+
+            const newCard =
+                finalCells[
+                    newCardIndex
+                ]?.querySelector(".card");
+
+
+            if (newCard) {
+
+                newCard.classList.add(
+                    "new-card"
+                );
+
+            }
+
+        }
+
+
+        /*
+            Remove moving state.
+        */
+
+        gameBoard.classList.remove(
+            "moving"
+        );
+
+
+        /*
+            Check game over.
+        */
+
+        if (isGameOver()) {
+
+            endGame();
+
+        }
+
+    }, 160);
+
+}
