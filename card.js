@@ -1027,309 +1027,297 @@ function calculateMove(direction) {
    ANIMATE MOVEMENT
 ========================================================= */
 
-function animateMovement(
-    movement
-) {
+unction animateMovement(movement) {
 
     const cells =
-        [
-            ...gameBoard.children
-        ];
-
+        [...gameBoard.children];
 
     const boardRect =
         gameBoard.getBoundingClientRect();
-
 
     const movingCards = [];
 
 
     /*
-        Create a temporary visual
-        card for every moving card.
+        Hide the original cards.
+        The cells remain visible.
     */
 
-    movement.movements.forEach(
-        item => {
+    cells.forEach(cell => {
 
-            const sourceCell =
-                cells[item.from];
+        const originalCard =
+            cell.querySelector(".card");
 
+        if (originalCard) {
 
-            if (!sourceCell) {
-                return;
-            }
-
-
-            const sourceRect =
-                sourceCell.getBoundingClientRect();
-
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "moving-card";
-
-
-            card.textContent =
-                item.value;
-
-
-            card.style.width =
-                `${sourceRect.width}px`;
-
-
-            card.style.height =
-                `${sourceRect.height}px`;
-
-
-            card.style.left =
-                `${
-                    sourceRect.left -
-                    boardRect.left
-                }px`;
-
-
-            card.style.top =
-                `${
-                    sourceRect.top -
-                    boardRect.top
-                }px`;
-
-
-            /*
-                Put it above the board.
-            */
-
-            gameBoard.appendChild(
-                card
+            originalCard.classList.add(
+                "card-moving-hidden"
             );
 
-
-            movingCards.push({
-
-                element:
-                    card,
-
-                item:
-                    item
-
-            });
-
         }
-    );
+
+    });
 
 
     /*
-        Force browser to register
-        starting positions.
+        Create temporary cards
+        at their ORIGINAL positions.
+    */
+
+    movement.movements.forEach(item => {
+
+        const sourceCell =
+            cells[item.from];
+
+        if (!sourceCell) {
+            return;
+        }
+
+
+        const sourceCard =
+            sourceCell.querySelector(".card");
+
+        if (!sourceCard) {
+            return;
+        }
+
+
+        const sourceRect =
+            sourceCard.getBoundingClientRect();
+
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "moving-card";
+
+
+        card.textContent =
+            item.value;
+
+
+        card.style.width =
+            `${sourceRect.width}px`;
+
+        card.style.height =
+            `${sourceRect.height}px`;
+
+
+        card.style.left =
+            `${sourceRect.left - boardRect.left}px`;
+
+        card.style.top =
+            `${sourceRect.top - boardRect.top}px`;
+
+
+        /*
+            Give it the same number
+            styling as the original card.
+        */
+
+        card.dataset.value =
+            item.value;
+
+
+        gameBoard.appendChild(card);
+
+
+        movingCards.push({
+
+            element: card,
+
+            item: item
+
+        });
+
+    });
+
+
+    /*
+        Force browser to recognise
+        the starting position.
     */
 
     void gameBoard.offsetWidth;
 
 
     /*
-        Start movement on next frame.
+        Move cards.
     */
 
-    requestAnimationFrame(
-        () => {
+    requestAnimationFrame(() => {
 
-            movingCards.forEach(
-                moving => {
+        movingCards.forEach(moving => {
 
-                    const item =
-                        moving.item;
+            const item =
+                moving.item;
 
 
-                    const startCell =
-                        cells[item.from];
+            const startCell =
+                cells[item.from];
+
+            const endCell =
+                cells[item.to];
 
 
-                    const endCell =
-                        cells[item.to];
+            if (
+                !startCell ||
+                !endCell
+            ) {
+                return;
+            }
 
 
-                    if (
-                        !startCell ||
-                        !endCell
-                    ) {
+            const start =
+                startCell.getBoundingClientRect();
 
-                        return;
-
-                    }
+            const end =
+                endCell.getBoundingClientRect();
 
 
-                    const start =
-                        startCell
-                            .getBoundingClientRect();
+            const x =
+                end.left - start.left;
+
+            const y =
+                end.top - start.top;
 
 
-                    const end =
-                        endCell
-                            .getBoundingClientRect();
+            moving.element.style.transform =
+                `translate(${x}px, ${y}px)`;
 
+        });
 
-                    const x =
-                        end.left -
-                        start.left;
-
-
-                    const y =
-                        end.top -
-                        start.top;
-
-
-                    moving.element.style.transform =
-                        `translate(${x}px, ${y}px)`;
-
-                }
-            );
-
-        }
-    );
+    });
 
 
     /*
-        Wait for movement.
+        Finish animation.
     */
 
-    setTimeout(
-        () => {
+    setTimeout(() => {
 
-            /*
-                Remove temporary
-                moving cards.
-            */
+        /*
+            Remove temporary cards.
+        */
 
-            movingCards.forEach(
-                moving => {
+        movingCards.forEach(moving => {
 
-                    moving.element.remove();
+            moving.element.remove();
 
-                }
-            );
+        });
 
 
-            /*
-                Apply final board.
-            */
+        /*
+            Apply the final board.
+        */
 
-            board =
-                movement.board;
-
-
-            /*
-                Remember board before
-                spawning.
-            */
-
-            const boardBeforeSpawn =
-                [...board];
+        board =
+            movement.board;
 
 
-            /*
-                ALWAYS spawn a card.
-            */
+        /*
+            Remember board before
+            spawning.
+        */
 
-            spawnCard();
-
-
-            /*
-                Remember board after
-                spawning.
-            */
-
-            const boardAfterSpawn =
-                [...board];
+        const boardBeforeSpawn =
+            [...board];
 
 
-            /*
-                Combo.
-            */
+        /*
+            Spawn every turn.
+        */
 
-            if (
-                movement.merged > 0
-            ) {
-
-                combo =
-                    movement.merged;
+        spawnCard();
 
 
-                gameMessage.textContent =
-                    `✨ COMBO ×${combo}!`;
+        /*
+            Remember board after
+            spawning.
+        */
 
-            } else {
-
-                combo = 0;
-
-
-                gameMessage.textContent =
-                    "Cards shifted ✨";
-
-            }
+        const boardAfterSpawn =
+            [...board];
 
 
-            updateScore();
+        /*
+            Combo.
+        */
 
-            updateNextCard();
+        if (
+            movement.merged > 0
+        ) {
 
+            combo =
+                movement.merged;
 
-            /*
-                Render final board.
-            */
+            gameMessage.textContent =
+                `✨ COMBO ×${combo}!`;
 
-            renderBoard();
+        } else {
 
+            combo = 0;
 
-            /*
-                Animate merged cards.
-            */
+            gameMessage.textContent =
+                "Cards shifted ✨";
 
-            animateMergedCards(
-                movement
-            );
-
-
-            /*
-                Animate newly spawned card.
-            */
-
-            animateNewCard(
-                boardBeforeSpawn,
-                boardAfterSpawn
-            );
+        }
 
 
-            isAnimating = false;
+        updateScore();
 
-            gameBoard.classList.remove(
-                "moving"
-            );
+        updateNextCard();
 
 
-            /*
-                Check game over.
-            */
+        /*
+            Render the REAL final board.
+        */
 
-            if (
-                isGameOver()
-            ) {
+        renderBoard();
 
-                endGame();
 
-            }
+        /*
+            Merge animation.
+        */
 
-        },
-        180
-    );
+        animateMergedCards(
+            movement
+        );
+
+
+        /*
+            New card animation.
+        */
+
+        animateNewCard(
+            boardBeforeSpawn,
+            boardAfterSpawn
+        );
+
+
+        isAnimating = false;
+
+        gameBoard.classList.remove(
+            "moving"
+        );
+
+
+        /*
+            Check game over.
+        */
+
+        if (
+            isGameOver()
+        ) {
+
+            endGame();
+
+        }
+
+    }, 180);
 
 }
-
 
 /* =========================================================
    MERGE ANIMATION
