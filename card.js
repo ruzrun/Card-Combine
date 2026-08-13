@@ -1027,7 +1027,7 @@ function calculateMove(direction) {
    ANIMATE MOVEMENT
 ========================================================= */
 
-unction animateMovement(movement) {
+function animateMovement(movement) {
 
     const cells =
         [...gameBoard.children];
