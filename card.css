@@ -539,26 +539,20 @@ h1 {
 ========================================================= */
 
 .moving-card {
-    position:
-        absolute;
+    position: absolute;
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
 
-    justify-content:
-        center;
+    justify-content: center;
 
-    border-radius:
-        9px;
+    border-radius: 9px;
 
     background:
         rgba(250, 147, 199, 0.85);
 
-    color:
-        white;
+    color: white;
 
     font-size:
         clamp(
@@ -567,29 +561,23 @@ h1 {
             30px
         );
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
     text-shadow:
         0 1px 3px
         rgba(0, 0, 0, 0.25);
 
     box-shadow:
-        0 0 12px
-        rgba(250, 147, 199, 0.65);
+        0 0 9px
+        rgba(250, 147, 199, 0.55);
 
-    z-index:
-        20;
+    z-index: 20;
 
-    pointer-events:
-        none;
+    pointer-events: none;
 
     transition:
-        transform
-        0.18s
-        ease-out;
+        transform 0.18s ease-out;
 }
-
 
 /* =========================================================
    MERGE ANIMATION
@@ -1162,4 +1150,8 @@ button:active {
             15px;
     }
 
+}
+
+.card-moving-hidden {
+    visibility: hidden;
 }
