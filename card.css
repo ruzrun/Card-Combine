@@ -1,0 +1,886 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+
+/* =========================
+   RESET
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   BODY
+========================= */
+
+body {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 20px;
+
+    background:
+        linear-gradient(
+            -45deg,
+            #ff6b6b,
+            #fddb92,
+            #4facfe,
+            #43e97b
+        );
+
+    background-size: 400% 400%;
+
+    animation:
+        gradientShift 15s ease infinite;
+
+    font-family: Georgia, serif;
+
+    color: white;
+
+    overflow-x: hidden;
+
+}
+
+
+@keyframes gradientShift {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+
+}
+
+
+/* =========================
+   GAME CONTAINER
+========================= */
+
+.game-container {
+
+    width: 100%;
+
+    max-width: 500px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    background:
+        rgba(0, 0, 0, 0.3);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 0 20px
+        rgba(255, 255, 255, 0.5);
+
+}
+
+
+/* =========================
+   TITLE
+========================= */
+
+h1 {
+
+    font-family:
+        'Dancing Script',
+        cursive;
+
+    font-size: 2.8rem;
+
+    color:
+        #fa93c7;
+
+    margin-bottom: 5px;
+
+}
+
+
+.subtitle {
+
+    color:
+        #ffd700;
+
+    font-style:
+        italic;
+
+    margin-bottom:
+        20px;
+
+}
+
+
+/* =========================
+   TOP BUTTONS
+========================= */
+
+.top-button {
+
+    position:
+        fixed;
+
+    top:
+        18px;
+
+    z-index:
+        9999;
+
+    padding:
+        10px 16px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.3);
+
+    border-radius:
+        25px;
+
+    background:
+        rgba(0, 0, 0, 0.35);
+
+    color:
+        white;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size:
+        14px;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+        0 6px 20px
+        rgba(0, 0, 0, 0.25);
+
+    backdrop-filter:
+        blur(8px);
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease;
+
+    text-decoration:
+        none;
+
+}
+
+
+.top-button:hover {
+
+    transform:
+        translateY(-2px)
+        scale(1.03);
+
+    background:
+        rgba(255, 255, 255, 0.25);
+
+}
+
+
+.top-button:active {
+
+    transform:
+        scale(0.95);
+
+}
+
+
+.back-button {
+
+    left:
+        18px;
+
+}
+
+
+.music-button {
+
+    right:
+        18px;
+
+}
+
+
+/* =========================
+   SCORE BOARD
+========================= */
+
+.score-board {
+
+    display:
+        flex;
+
+    justify-content:
+        space-around;
+
+    gap:
+        10px;
+
+    margin-bottom:
+        18px;
+
+}
+
+
+.score-board div {
+
+    flex:
+        1;
+
+    padding:
+        9px 6px;
+
+    border-radius:
+        10px;
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    font-size:
+        13px;
+
+}
+
+
+.score-board span {
+
+    display:
+        block;
+
+    margin-top:
+        3px;
+
+    font-size:
+        22px;
+
+    font-weight:
+        bold;
+
+    color:
+        #ffd700;
+
+}
+
+
+/* =========================
+   NEXT CARD
+========================= */
+
+.next-card-section {
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    gap:
+        12px;
+
+    margin-bottom:
+        10px;
+
+}
+
+
+.next-card-section p {
+
+    color:
+        #ffd700;
+
+    font-style:
+        italic;
+
+}
+
+
+#nextCard {
+
+    width:
+        52px;
+
+    height:
+        62px;
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    border-radius:
+        10px;
+
+    background:
+        rgba(255, 255, 255, 0.2);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.3);
+
+    color:
+        white;
+
+    font-size:
+        22px;
+
+    font-weight:
+        bold;
+
+    box-shadow:
+        0 0 12px
+        rgba(255, 255, 255, 0.25);
+
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+#gameMessage {
+
+    min-height:
+        24px;
+
+    margin:
+        12px 0;
+
+    color:
+        #ffd700;
+
+    font-style:
+        italic;
+
+}
+
+
+/* =========================
+   GAME BOARD
+========================= */
+
+#gameBoard {
+
+    width:
+        100%;
+
+    max-width:
+        390px;
+
+    aspect-ratio:
+        1 / 1;
+
+    margin:
+        0 auto;
+
+    padding:
+        7px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:
+        7px;
+
+    background:
+        rgba(0, 0, 0, 0.3);
+
+    border-radius:
+        14px;
+
+}
+
+
+/* =========================
+   BOARD CELL
+========================= */
+
+.board-cell {
+
+    min-width:
+        0;
+
+    aspect-ratio:
+        1 / 1;
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    border-radius:
+        10px;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.board-cell:hover {
+
+    background:
+        rgba(255, 255, 255, 0.18);
+
+    transform:
+        scale(1.03);
+
+}
+
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+
+    width:
+        82%;
+
+    height:
+        82%;
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    border-radius:
+        10px;
+
+    background:
+        rgba(250, 147, 199, 0.85);
+
+    color:
+        white;
+
+    font-size:
+        clamp(18px, 6vw, 30px);
+
+    font-weight:
+        bold;
+
+    box-shadow:
+        0 0 10px
+        rgba(250, 147, 199, 0.55);
+
+    animation:
+        cardAppear 0.2s ease;
+
+}
+
+
+@keyframes cardAppear {
+
+    from {
+
+        opacity:
+            0;
+
+        transform:
+            scale(0.6);
+
+    }
+
+    to {
+
+        opacity:
+            1;
+
+        transform:
+            scale(1);
+
+    }
+
+}
+
+
+/* =========================
+   EMPTY CELL
+========================= */
+
+.board-cell.empty {
+
+    cursor:
+        pointer;
+
+}
+
+
+.board-cell.empty:hover {
+
+    background:
+        rgba(255, 255, 255, 0.22);
+
+}
+
+
+/* =========================
+   HIGH VALUE CARDS
+========================= */
+
+.card[data-value="4"] {
+
+    background:
+        rgba(255, 180, 120, 0.9);
+
+}
+
+
+.card[data-value="8"] {
+
+    background:
+        rgba(255, 215, 0, 0.9);
+
+}
+
+
+.card[data-value="16"] {
+
+    background:
+        rgba(79, 172, 254, 0.9);
+
+}
+
+
+.card[data-value="32"] {
+
+    background:
+        rgba(67, 233, 123, 0.9);
+
+}
+
+
+.card[data-value="64"] {
+
+    background:
+        rgba(190, 120, 255, 0.9);
+
+}
+
+
+.card[data-value="128"] {
+
+    background:
+        rgba(255, 100, 170, 0.95);
+
+}
+
+
+.card[data-value="256"] {
+
+    background:
+        rgba(255, 120, 70, 0.95);
+
+}
+
+
+/* =========================
+   COMBO EFFECT
+========================= */
+
+.combo-active {
+
+    animation:
+        comboPop 0.35s ease;
+
+}
+
+
+@keyframes comboPop {
+
+    0% {
+        transform:
+            scale(1);
+    }
+
+    50% {
+        transform:
+            scale(1.08);
+    }
+
+    100% {
+        transform:
+            scale(1);
+    }
+
+}
+
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+.game-actions {
+
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    gap:
+        10px;
+
+    margin-top:
+        15px;
+
+}
+
+
+.game-button {
+
+    padding:
+        10px 20px;
+
+    border:
+        none;
+
+    border-radius:
+        10px;
+
+    background:
+        rgba(255, 255, 255, 0.3);
+
+    color:
+        white;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size:
+        16px;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.3s;
+
+}
+
+
+.game-button:hover {
+
+    background:
+        rgba(255, 255, 255, 0.6);
+
+    color:
+        black;
+
+}
+
+
+.game-button:active {
+
+    transform:
+        scale(0.95);
+
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+.game-over {
+
+    animation:
+        gameOverPulse 0.8s ease infinite
+        alternate;
+
+}
+
+
+@keyframes gameOverPulse {
+
+    from {
+
+        box-shadow:
+            0 0 10px
+            rgba(255, 255, 255, 0.2);
+
+    }
+
+    to {
+
+        box-shadow:
+            0 0 25px
+            rgba(250, 147, 199, 0.8);
+
+    }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 500px) {
+
+    body {
+
+        padding:
+            15px;
+
+    }
+
+
+    .game-container {
+
+        width:
+            100%;
+
+        padding:
+            18px;
+
+    }
+
+
+    h1 {
+
+        font-size:
+            2.4rem;
+
+    }
+
+
+    #gameBoard {
+
+        width:
+            100%;
+
+        max-width:
+            100%;
+
+        gap:
+            5px;
+
+        padding:
+            5px;
+
+    }
+
+
+    .board-cell {
+
+        border-radius:
+            7px;
+
+    }
+
+
+    .card {
+
+        border-radius:
+            8px;
+
+        font-size:
+            clamp(17px, 6vw, 26px);
+
+    }
+
+
+    .top-button {
+
+        top:
+            12px;
+
+        padding:
+            9px 13px;
+
+        font-size:
+            13px;
+
+    }
+
+
+    .back-button {
+
+        left:
+            12px;
+
+    }
+
+
+    .music-button {
+
+        right:
+            12px;
+
+    }
+
+
+    .score-board {
+
+        gap:
+            6px;
+
+    }
+
+
+    .score-board div {
+
+        font-size:
+            12px;
+
+    }
+
+
+    .score-board span {
+
+        font-size:
+            19px;
+
+    }
+
+}
