@@ -1,59 +1,26 @@
 /* =========================
-   ELEMENTS
+   CARD COMBINE 🃏
+   2048 STYLE
 ========================= */
 
 const gameBoard = document.getElementById("gameBoard");
-
-const scoreDisplay =
-    document.getElementById("score");
-
-const bestScoreDisplay =
-    document.getElementById("bestScore");
-
-const comboDisplay =
-    document.getElementById("combo");
-
-const nextCardDisplay =
-    document.getElementById("nextCard");
-
-const gameMessage =
-    document.getElementById("gameMessage");
-
-const restartButton =
-    document.getElementById("restartButton");
-
-const musicButton =
-    document.getElementById("musicButton");
+const scoreDisplay = document.getElementById("score");
+const bestScoreDisplay = document.getElementById("bestScore");
+const comboDisplay = document.getElementById("combo");
+const nextCardDisplay = document.getElementById("nextCard");
+const gameMessage = document.getElementById("gameMessage");
+const restartButton = document.getElementById("restartButton");
+const musicButton = document.getElementById("musicButton");
 
 
 /* =========================
-   GAME SETTINGS
+   SETTINGS
 ========================= */
 
-const BOARD_SIZE = 4;
-
-const TOTAL_CELLS =
-    BOARD_SIZE * BOARD_SIZE;
-
-
-/*
-    Starting cards.
-
-    The game begins with
-    two cards already on the board.
-*/
+const SIZE = 4;
+const CELLS = SIZE * SIZE;
 
 const STARTING_CARDS = 2;
-
-
-/*
-    Possible cards that can appear.
-
-    Higher cards become possible
-    later as your score increases.
-*/
-
-const BASIC_CARDS = [2, 2, 2, 2, 4];
 
 
 /* =========================
@@ -62,22 +29,16 @@ const BASIC_CARDS = [2, 2, 2, 2, 4];
 
 let board = [];
 
-let currentCard = 2;
-
-let nextCard = 2;
-
 let score = 0;
 
 let bestScore =
-    Number(
-        localStorage.getItem(
-            "cardCombineBestScore"
-        )
-    ) || 0;
+    Number(localStorage.getItem("cardCombineBestScore")) || 0;
 
 let combo = 0;
 
 let gameActive = true;
+
+let nextCard = 2;
 
 
 /* =========================
@@ -88,73 +49,83 @@ const backgroundMusic =
     new Audio("audio/game.mp3");
 
 backgroundMusic.loop = true;
-
 backgroundMusic.volume = 0.25;
 
 let musicEnabled = true;
 
 
-backgroundMusic.play()
-    .then(() => {
+musicButton.addEventListener("click", () => {
+
+    if (musicEnabled) {
+
+        musicEnabled = false;
+
+        backgroundMusic.pause();
 
         musicButton.textContent =
-            "🎵 Music On";
+            "🔇 Music Off";
 
-    })
-    .catch(() => {
+    } else {
 
-        musicButton.textContent =
-            "🎵 Start Music";
+        musicEnabled = true;
 
-    });
+        backgroundMusic.play()
+            .then(() => {
 
+                musicButton.textContent =
+                    "🎵 Music On";
 
-musicButton.addEventListener(
-    "click",
-    () => {
+            })
+            .catch(() => {
 
-        if (musicEnabled) {
+                musicButton.textContent =
+                    "🎵 Start Music";
 
-            musicEnabled = false;
-
-            backgroundMusic.pause();
-
-            musicButton.textContent =
-                "🔇 Music Off";
-
-        } else {
-
-            musicEnabled = true;
-
-            backgroundMusic
-                .play()
-                .then(() => {
-
-                    musicButton.textContent =
-                        "🎵 Music On";
-
-                })
-                .catch(() => {
-
-                    musicButton.textContent =
-                        "🎵 Start Music";
-
-                });
-
-        }
+            });
 
     }
+
+});
+
+
+/*
+    Browser autoplay policies can
+    block music until interaction.
+*/
+
+document.addEventListener(
+    "click",
+    startMusicOnce,
+    { once: true }
 );
 
 
+function startMusicOnce() {
+
+    if (!musicEnabled) {
+        return;
+    }
+
+    backgroundMusic.play()
+        .then(() => {
+
+            musicButton.textContent =
+                "🎵 Music On";
+
+        })
+        .catch(() => {});
+
+}
+
+
 /* =========================
-   INITIALISE GAME
+   START GAME
 ========================= */
 
 function startGame() {
 
     board =
-        Array(TOTAL_CELLS).fill(null);
+        Array(CELLS).fill(0);
 
     score = 0;
 
@@ -162,13 +133,7 @@ function startGame() {
 
     gameActive = true;
 
-
-    currentCard =
-        generateCard();
-
-
-    nextCard =
-        generateCard();
+    nextCard = generateCard();
 
 
     scoreDisplay.textContent =
@@ -182,11 +147,12 @@ function startGame() {
 
 
     /*
-        Put a couple of cards
-        onto the starting board.
+        Start with two cards.
     */
 
-    placeStartingCards();
+    spawnCard();
+
+    spawnCard();
 
 
     updateNextCard();
@@ -195,50 +161,7 @@ function startGame() {
 
 
     gameMessage.textContent =
-        "Choose a space for your card 💕";
-
-}
-
-
-/* =========================
-   STARTING CARDS
-========================= */
-
-function placeStartingCards() {
-
-    const available =
-        getEmptyCells();
-
-
-    for (
-        let i = 0;
-        i < STARTING_CARDS;
-        i++
-    ) {
-
-        if (available.length === 0) {
-            break;
-        }
-
-
-        const randomIndex =
-            Math.floor(
-                Math.random() *
-                available.length
-            );
-
-
-        const cellIndex =
-            available.splice(
-                randomIndex,
-                1
-            )[0];
-
-
-        board[cellIndex] =
-            generateCard();
-
-    }
+        "Swipe or use the arrow keys ✨";
 
 }
 
@@ -247,47 +170,333 @@ function placeStartingCards() {
    GENERATE CARD
 ========================= */
 
+/*
+    The spawn system changes
+    according to the highest
+    card currently on the board.
+
+    Small cards remain common.
+
+    Larger cards become possible
+    as the board gets stronger.
+*/
+
 function generateCard() {
 
-    /*
-        Later in the game,
-        slightly higher cards
-        can appear.
-    */
+    const highest =
+        getHighestCard();
 
 
-    const random =
+    const roll =
         Math.random();
 
 
-    if (
-        score >= 1000 &&
-        random < 0.08
-    ) {
+    /*
+        EARLY GAME
+        Mostly 2 and 4.
+    */
 
-        return 8;
+    if (highest <= 4) {
 
-    }
-
-
-    if (
-        score >= 500 &&
-        random < 0.15
-    ) {
+        if (roll < 0.88) {
+            return 2;
+        }
 
         return 4;
 
     }
 
 
-    const index =
+    /*
+        HIGHEST = 8
+    */
+
+    if (highest <= 8) {
+
+        if (roll < 0.65) {
+            return 2;
+        }
+
+        if (roll < 0.92) {
+            return 4;
+        }
+
+        return 8;
+
+    }
+
+
+    /*
+        HIGHEST = 16
+    */
+
+    if (highest <= 16) {
+
+        if (roll < 0.52) {
+            return 2;
+        }
+
+        if (roll < 0.82) {
+            return 4;
+        }
+
+        if (roll < 0.96) {
+            return 8;
+        }
+
+        return 16;
+
+    }
+
+
+    /*
+        HIGHEST = 32
+    */
+
+    if (highest <= 32) {
+
+        if (roll < 0.42) {
+            return 2;
+        }
+
+        if (roll < 0.68) {
+            return 4;
+        }
+
+        if (roll < 0.88) {
+            return 8;
+        }
+
+        if (roll < 0.98) {
+            return 16;
+        }
+
+        return 32;
+
+    }
+
+
+    /*
+        HIGHEST = 64
+    */
+
+    if (highest <= 64) {
+
+        if (roll < 0.36) {
+            return 2;
+        }
+
+        if (roll < 0.59) {
+            return 4;
+        }
+
+        if (roll < 0.79) {
+            return 8;
+        }
+
+        if (roll < 0.93) {
+            return 16;
+        }
+
+        if (roll < 0.99) {
+            return 32;
+        }
+
+        return 64;
+
+    }
+
+
+    /*
+        HIGHEST = 128+
+        
+        Keep 2, 4, 8, 16 and 32
+        as the main cards.
+
+        Higher cards remain rare.
+    */
+
+    const maxSpawn =
+        highest;
+
+
+    const possibleCards = [
+        2,
+        4,
+        8,
+        16,
+        32
+    ];
+
+
+    /*
+        Add larger cards based
+        on the board's highest card.
+    */
+
+    let value = 64;
+
+    while (
+        value <= maxSpawn
+    ) {
+
+        possibleCards.push(value);
+
+        value *= 2;
+
+    }
+
+
+    /*
+        Weighted random selection.
+
+        Smaller cards have much
+        greater weight.
+    */
+
+    const weightedCards = [];
+
+
+    possibleCards.forEach(card => {
+
+        let weight;
+
+
+        if (card <= 4) {
+
+            weight = 30;
+
+        } else if (card === 8) {
+
+            weight = 18;
+
+        } else if (card === 16) {
+
+            weight = 10;
+
+        } else if (card === 32) {
+
+            weight = 5;
+
+        } else {
+
+            /*
+                Higher cards become
+                increasingly rare.
+            */
+
+            weight =
+                Math.max(
+                    1,
+                    8 -
+                    Math.log2(card)
+                );
+
+        }
+
+
+        for (
+            let i = 0;
+            i < weight;
+            i++
+        ) {
+
+            weightedCards.push(card);
+
+        }
+
+    });
+
+
+    return weightedCards[
         Math.floor(
             Math.random() *
-            BASIC_CARDS.length
+            weightedCards.length
+        )
+    ];
+
+}
+
+
+/* =========================
+   HIGHEST CARD
+========================= */
+
+function getHighestCard() {
+
+    return Math.max(
+        ...board,
+        2
+    );
+
+}
+
+
+/* =========================
+   SPAWN CARD
+========================= */
+
+function spawnCard() {
+
+    const emptyCells = [];
+
+
+    board.forEach(
+        (value, index) => {
+
+            if (value === 0) {
+
+                emptyCells.push(index);
+
+            }
+
+        }
+    );
+
+
+    /*
+        No space.
+    */
+
+    if (
+        emptyCells.length === 0
+    ) {
+
+        return false;
+
+    }
+
+
+    const randomIndex =
+        Math.floor(
+            Math.random() *
+            emptyCells.length
         );
 
 
-    return BASIC_CARDS[index];
+    const position =
+        emptyCells[randomIndex];
+
+
+    /*
+        Use the prepared
+        next card.
+    */
+
+    board[position] =
+        nextCard;
+
+
+    /*
+        Prepare another card
+        for the next spawn.
+    */
+
+    nextCard =
+        generateCard();
+
+
+    return true;
 
 }
 
@@ -308,38 +517,18 @@ function renderBoard() {
                 document.createElement("div");
 
 
-            cell.classList.add(
-                "board-cell"
-            );
+            cell.className =
+                "board-cell";
 
 
-            if (value === null) {
-
-                cell.classList.add(
-                    "empty"
-                );
-
-
-                cell.addEventListener(
-                    "click",
-                    () => {
-
-                        placeCard(index);
-
-                    }
-                );
-
-            } else {
+            if (value !== 0) {
 
                 const card =
-                    document.createElement(
-                        "div"
-                    );
+                    document.createElement("div");
 
 
-                card.classList.add(
-                    "card"
-                );
+                card.className =
+                    "card";
 
 
                 card.dataset.value =
@@ -351,6 +540,12 @@ function renderBoard() {
 
 
                 cell.appendChild(card);
+
+            } else {
+
+                cell.classList.add(
+                    "empty"
+                );
 
             }
 
@@ -364,75 +559,114 @@ function renderBoard() {
 
 
 /* =========================
-   PLACE CARD
+   MOVE BOARD
 ========================= */
 
-function placeCard(index) {
+function move(direction) {
 
     if (!gameActive) {
         return;
     }
 
 
-    if (board[index] !== null) {
-        return;
-    }
+    let moved = false;
+
+    let totalMerged = 0;
 
 
     /*
-        Place current card.
+        Convert board into rows
+        depending on direction.
     */
 
-    board[index] =
-        currentCard;
+    const lines =
+        getLines(direction);
+
+
+    const newBoard =
+        Array(CELLS).fill(0);
+
+
+    lines.forEach(
+        (line, lineIndex) => {
+
+            const values =
+                line.map(
+                    index =>
+                        board[index]
+                );
+
+
+            const result =
+                slideAndMerge(values);
+
+
+            /*
+                Put result back into
+                the correct positions.
+            */
+
+            result.values.forEach(
+                (value, position) => {
+
+                    newBoard[
+                        line[position]
+                    ] = value;
+
+                }
+            );
+
+
+            if (result.moved) {
+
+                moved = true;
+
+            }
+
+
+            totalMerged +=
+                result.merged;
+
+        }
+    );
+
+
+    board =
+        newBoard;
 
 
     /*
-        Remember which card
-        was placed.
+        Combo is based on how
+        many combinations happened.
     */
 
-    const placedValue =
-        currentCard;
+    if (totalMerged > 0) {
 
+        combo =
+            totalMerged;
 
-    /*
-        Prepare next card.
-    */
+        gameMessage.textContent =
+            `✨ COMBO ×${combo}!`;
 
-    currentCard =
-        nextCard;
-
-    nextCard =
-        generateCard();
-
-
-    /*
-        Reset combo before
-        checking combinations.
-    */
-
-    combo = 0;
-
-
-    /*
-        First check whether
-        the newly placed card
-        can combine.
-    */
-
-    const combined =
-        tryCombine(index);
-
-
-    if (!combined) {
+    } else {
 
         combo = 0;
 
         gameMessage.textContent =
-            `Placed ${placedValue} ✨`;
+            "Cards shifted ✨";
 
     }
+
+
+    /*
+        IMPORTANT:
+        A new card ALWAYS spawns
+        after every swipe.
+
+        Even if nothing moved.
+    */
+
+    spawnCard();
 
 
     updateScore();
@@ -443,8 +677,8 @@ function placeCard(index) {
 
 
     /*
-        Check if the game
-        has ended.
+        Check game over AFTER
+        the new card appears.
     */
 
     if (isGameOver()) {
@@ -457,238 +691,467 @@ function placeCard(index) {
 
 
 /* =========================
-   COMBINE
+   SLIDE + MERGE
 ========================= */
 
-function tryCombine(index) {
-
-    let combinedSomething =
-        false;
-
-
-    while (true) {
-
-        const value =
-            board[index];
-
-
-        if (value === null) {
-            break;
-        }
-
-
-        /*
-            Find another card
-            with the same value.
-        */
-
-        const matchingIndex =
-            findMatchingCard(
-                index,
-                value
-            );
-
-
-        if (matchingIndex === -1) {
-
-            break;
-
-        }
-
-
-        /*
-            Combine the cards.
-        */
-
-        const newValue =
-            value * 2;
-
-
-        board[index] =
-            newValue;
-
-
-        board[matchingIndex] =
-            null;
-
-
-        /*
-            Add score.
-        */
-
-        const points =
-            newValue;
-
-
-        score += points;
-
-
-        combo++;
-
-        combinedSomething = true;
-
-
-        /*
-            Small visual effect.
-        */
-
-        gameMessage.textContent =
-            `✨ ${value} + ${value} = ${newValue}!`;
-
-
-        /*
-            If the new card can
-            immediately combine again,
-            the loop continues.
-        */
-
-    }
-
-
-    if (combinedSomething) {
-
-        if (combo >= 2) {
-
-            gameMessage.textContent =
-                `🔥 COMBO ×${combo}!`;
-
-        } else {
-
-            gameMessage.textContent =
-                `✨ Combined!`;
-
-        }
-
-    }
-
-
-    return combinedSomething;
-
-}
-
-
-/* =========================
-   FIND MATCHING CARD
-========================= */
-
-function findMatchingCard(
-    index,
-    value
-) {
+function slideAndMerge(values) {
 
     /*
-        For this game,
-        cards combine if they
-        are directly connected
-        horizontally or vertically.
+        Remove empty spaces.
     */
 
-
-    const row =
-        Math.floor(
-            index / BOARD_SIZE
+    const filtered =
+        values.filter(
+            value => value !== 0
         );
 
 
-    const column =
-        index % BOARD_SIZE;
+    const result = [];
 
-
-    const neighbours = [];
-
-
-    /*
-        Up
-    */
-
-    if (row > 0) {
-
-        neighbours.push(
-            index - BOARD_SIZE
-        );
-
-    }
-
-
-    /*
-        Down
-    */
-
-    if (
-        row <
-        BOARD_SIZE - 1
-    ) {
-
-        neighbours.push(
-            index + BOARD_SIZE
-        );
-
-    }
-
-
-    /*
-        Left
-    */
-
-    if (column > 0) {
-
-        neighbours.push(
-            index - 1
-        );
-
-    }
-
-
-    /*
-        Right
-    */
-
-    if (
-        column <
-        BOARD_SIZE - 1
-    ) {
-
-        neighbours.push(
-            index + 1
-        );
-
-    }
-
-
-    /*
-        Shuffle neighbours
-        so the game doesn't always
-        favour one direction.
-    */
-
-    neighbours.sort(
-        () => Math.random() - 0.5
-    );
+    let merged = 0;
 
 
     for (
-        const neighbour of neighbours
+        let i = 0;
+        i < filtered.length;
+        i++
     ) {
 
+        /*
+            If the next card is
+            identical, combine them.
+        */
+
         if (
-            board[neighbour] ===
-            value
+            filtered[i] ===
+            filtered[i + 1]
         ) {
 
-            return neighbour;
+            const newValue =
+                filtered[i] * 2;
+
+
+            result.push(
+                newValue
+            );
+
+
+            score +=
+                newValue;
+
+
+            merged++;
+
+            i++;
+
+        } else {
+
+            result.push(
+                filtered[i]
+            );
 
         }
 
     }
 
 
-    return -1;
+    /*
+        Restore empty spaces.
+    */
+
+    while (
+        result.length <
+        SIZE
+    ) {
+
+        result.push(0);
+
+    }
+
+
+    /*
+        Check whether the line
+        actually changed.
+    */
+
+    const moved =
+        result.some(
+            (value, index) =>
+                value !== values[index]
+        );
+
+
+    return {
+        values: result,
+        moved: moved,
+        merged: merged
+    };
 
 }
 
 
 /* =========================
-   UPDATE SCORE
+   GET LINES
+========================= */
+
+function getLines(direction) {
+
+    const lines = [];
+
+
+    /*
+        LEFT
+    */
+
+    if (
+        direction === "left"
+    ) {
+
+        for (
+            let row = 0;
+            row < SIZE;
+            row++
+        ) {
+
+            const line = [];
+
+
+            for (
+                let col = 0;
+                col < SIZE;
+                col++
+            ) {
+
+                line.push(
+                    row * SIZE + col
+                );
+
+            }
+
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /*
+        RIGHT
+    */
+
+    else if (
+        direction === "right"
+    ) {
+
+        for (
+            let row = 0;
+            row < SIZE;
+            row++
+        ) {
+
+            const line = [];
+
+
+            for (
+                let col = SIZE - 1;
+                col >= 0;
+                col--
+            ) {
+
+                line.push(
+                    row * SIZE + col
+                );
+
+            }
+
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /*
+        UP
+    */
+
+    else if (
+        direction === "up"
+    ) {
+
+        for (
+            let col = 0;
+            col < SIZE;
+            col++
+        ) {
+
+            const line = [];
+
+
+            for (
+                let row = 0;
+                row < SIZE;
+                row++
+            ) {
+
+                line.push(
+                    row * SIZE + col
+                );
+
+            }
+
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /*
+        DOWN
+    */
+
+    else if (
+        direction === "down"
+    ) {
+
+        for (
+            let col = 0;
+            col < SIZE;
+            col++
+        ) {
+
+            const line = [];
+
+
+            for (
+                let row = SIZE - 1;
+                row >= 0;
+                row--
+            ) {
+
+                line.push(
+                    row * SIZE + col
+                );
+
+            }
+
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    return lines;
+
+}
+
+
+/* =========================
+   KEYBOARD CONTROLS
+========================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        const key =
+            event.key.toLowerCase();
+
+
+        if (
+            key === "arrowleft" ||
+            key === "a"
+        ) {
+
+            event.preventDefault();
+
+            move("left");
+
+        }
+
+
+        else if (
+            key === "arrowright" ||
+            key === "d"
+        ) {
+
+            event.preventDefault();
+
+            move("right");
+
+        }
+
+
+        else if (
+            key === "arrowup" ||
+            key === "w"
+        ) {
+
+            event.preventDefault();
+
+            move("up");
+
+        }
+
+
+        else if (
+            key === "arrowdown" ||
+            key === "s"
+        ) {
+
+            event.preventDefault();
+
+            move("down");
+
+        }
+
+    }
+);
+
+
+/* =========================
+   MOBILE SWIPE
+========================= */
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+let touchEndX = 0;
+let touchEndY = 0;
+
+
+gameBoard.addEventListener(
+    "touchstart",
+    event => {
+
+        const touch =
+            event.changedTouches[0];
+
+
+        touchStartX =
+            touch.clientX;
+
+        touchStartY =
+            touch.clientY;
+
+    },
+    { passive: true }
+);
+
+
+gameBoard.addEventListener(
+    "touchend",
+    event => {
+
+        const touch =
+            event.changedTouches[0];
+
+
+        touchEndX =
+            touch.clientX;
+
+        touchEndY =
+            touch.clientY;
+
+
+        handleSwipe();
+
+    },
+    { passive: true }
+);
+
+
+/* =========================
+   HANDLE SWIPE
+========================= */
+
+function handleSwipe() {
+
+    const deltaX =
+        touchEndX -
+        touchStartX;
+
+
+    const deltaY =
+        touchEndY -
+        touchStartY;
+
+
+    const minimumSwipe =
+        30;
+
+
+    /*
+        Ignore tiny touches.
+    */
+
+    if (
+        Math.abs(deltaX) <
+            minimumSwipe &&
+        Math.abs(deltaY) <
+            minimumSwipe
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Horizontal swipe.
+    */
+
+    if (
+        Math.abs(deltaX) >
+        Math.abs(deltaY)
+    ) {
+
+        if (
+            deltaX > 0
+        ) {
+
+            move("right");
+
+        } else {
+
+            move("left");
+
+        }
+
+    }
+
+
+    /*
+        Vertical swipe.
+    */
+
+    else {
+
+        if (
+            deltaY > 0
+        ) {
+
+            move("down");
+
+        } else {
+
+            move("up");
+
+        }
+
+    }
+
+}
+
+
+/* =========================
+   SCORE
 ========================= */
 
 function updateScore() {
@@ -697,7 +1160,9 @@ function updateScore() {
         score;
 
 
-    if (score > bestScore) {
+    if (
+        score > bestScore
+    ) {
 
         bestScore =
             score;
@@ -718,27 +1183,6 @@ function updateScore() {
     comboDisplay.textContent =
         combo;
 
-
-    /*
-        Combo animation.
-    */
-
-    if (combo > 0) {
-
-        comboDisplay.classList.remove(
-            "combo-active"
-        );
-
-
-        void comboDisplay.offsetWidth;
-
-
-        comboDisplay.classList.add(
-            "combo-active"
-        );
-
-    }
-
 }
 
 
@@ -755,50 +1199,18 @@ function updateNextCard() {
 
 
 /* =========================
-   EMPTY CELLS
-========================= */
-
-function getEmptyCells() {
-
-    const emptyCells = [];
-
-
-    board.forEach(
-        (value, index) => {
-
-            if (value === null) {
-
-                emptyCells.push(
-                    index
-                );
-
-            }
-
-        }
-    );
-
-
-    return emptyCells;
-
-}
-
-
-/* =========================
-   GAME OVER CHECK
+   GAME OVER
 ========================= */
 
 function isGameOver() {
 
     /*
         If there is an empty
-        space, the player can
-        still place a card.
+        cell, the game continues.
     */
 
     if (
-        board.some(
-            value => value === null
-        )
+        board.includes(0)
     ) {
 
         return false;
@@ -807,36 +1219,83 @@ function isGameOver() {
 
 
     /*
-        Board is full.
-
-        Check whether there
-        are any neighbouring
-        matching cards.
-
-        If there are, the player
-        can still combine them.
+        Check horizontal pairs.
     */
 
     for (
-        let index = 0;
-        index < TOTAL_CELLS;
-        index++
+        let row = 0;
+        row < SIZE;
+        row++
     ) {
 
-        const value =
-            board[index];
+        for (
+            let col = 0;
+            col < SIZE - 1;
+            col++
+        ) {
+
+            const current =
+                board[
+                    row * SIZE + col
+                ];
 
 
-        const matching =
-            findMatchingCard(
-                index,
-                value
-            );
+            const next =
+                board[
+                    row * SIZE +
+                    col + 1
+                ];
 
 
-        if (matching !== -1) {
+            if (
+                current === next
+            ) {
 
-            return false;
+                return false;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        Check vertical pairs.
+    */
+
+    for (
+        let row = 0;
+        row < SIZE - 1;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < SIZE;
+            col++
+        ) {
+
+            const current =
+                board[
+                    row * SIZE + col
+                ];
+
+
+            const below =
+                board[
+                    (row + 1) *
+                    SIZE + col
+                ];
+
+
+            if (
+                current === below
+            ) {
+
+                return false;
+
+            }
 
         }
 
@@ -857,13 +1316,13 @@ function endGame() {
     gameActive = false;
 
 
-    gameMessage.textContent =
-        "GAME OVER 💔";
-
-
     gameBoard.classList.add(
         "game-over"
     );
+
+
+    gameMessage.textContent =
+        `Game Over 💔 Score: ${score}`;
 
 }
 
