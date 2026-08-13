@@ -883,11 +883,107 @@ h1 {
 
     }
 
-   #gameBoard {
+   
+}
+
+#gameBoard {
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     overscroll-behavior: contain;
 }
+
+
+/* =========================
+   CARD MOVEMENT ANIMATION
+========================= */
+
+#gameBoard {
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* Moving cards */
+
+.moving-card {
+    position: absolute;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 10px;
+
+    background:
+        rgba(250, 147, 199, 0.85);
+
+    color: white;
+
+    font-size: clamp(18px, 6vw, 30px);
+
+    font-weight: bold;
+
+    box-shadow:
+        0 0 10px
+        rgba(250, 147, 199, 0.55);
+
+    z-index: 10;
+
+    pointer-events: none;
+
+    transition:
+        transform 0.14s ease-out;
+}
+
+
+/* Merge pop */
+
+.merged-card {
+    animation:
+        mergePop 0.22s ease-out;
+}
+
+
+@keyframes mergePop {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.22);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* New card appearing */
+
+.new-card {
+    animation:
+        newCardPop 0.18s ease-out;
+}
+
+
+@keyframes newCardPop {
+
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+
+    70% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 
 }
