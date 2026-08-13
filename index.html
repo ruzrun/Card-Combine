@@ -46,8 +46,10 @@
 
     <!-- GAME -->
 
-    <div class="game-container">
+    <main class="game-container">
 
+
+        <!-- TITLE -->
 
         <h1>
             Card Combine 🃏
@@ -64,39 +66,20 @@
 
         <div class="score-board">
 
-
             <div>
-
                 Score
-
-                <span id="score">
-                    0
-                </span>
-
+                <span id="score">0</span>
             </div>
 
-
             <div>
-
                 Best
-
-                <span id="bestScore">
-                    0
-                </span>
-
+                <span id="bestScore">0</span>
             </div>
-
 
             <div>
-
                 Combo
-
-                <span id="combo">
-                    0
-                </span>
-
+                <span id="combo">0</span>
             </div>
-
 
         </div>
 
@@ -121,14 +104,17 @@
         <!-- GAME MESSAGE -->
 
         <p id="gameMessage">
-            Choose a space for your card 💕
+            Swipe or use the arrow keys ✨
         </p>
 
 
 
         <!-- GAME BOARD -->
 
-        <div id="gameBoard"></div>
+        <div
+            id="gameBoard"
+            aria-label="Card Combine game board"
+        ></div>
 
 
 
@@ -136,20 +122,18 @@
 
         <div class="game-actions">
 
-
             <button
                 id="restartButton"
                 class="game-button"
+                type="button"
             >
                 Restart 🔄
             </button>
 
-
         </div>
 
 
-
-    </div>
+    </main>
 
 
 
