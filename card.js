@@ -1015,141 +1015,74 @@ document.addEventListener(
 );
 
 
-/* =========================
-   MOBILE SWIPE
-========================= */
-
 let touchStartX = 0;
 let touchStartY = 0;
+let touchStartTime = 0;
 
-let touchEndX = 0;
-let touchEndY = 0;
+gameBoard.addEventListener("touchstart", event => {
 
+    const touch = event.changedTouches[0];
 
-gameBoard.addEventListener(
-    "touchstart",
-    event => {
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = Date.now();
 
-        const touch =
-            event.changedTouches[0];
+}, {
+    passive: false
+});
 
+gameBoard.addEventListener("touchmove", event => {
 
-        touchStartX =
-            touch.clientX;
+    event.preventDefault();
 
-        touchStartY =
-            touch.clientY;
+}, {
+    passive: false
+});
 
-    },
-    { passive: true }
-);
+gameBoard.addEventListener("touchend", event => {
 
-
-gameBoard.addEventListener(
-    "touchend",
-    event => {
-
-        const touch =
-            event.changedTouches[0];
-
-
-        touchEndX =
-            touch.clientX;
-
-        touchEndY =
-            touch.clientY;
-
-
-        handleSwipe();
-
-    },
-    { passive: true }
-);
-
-
-/* =========================
-   HANDLE SWIPE
-========================= */
-
-function handleSwipe() {
+    const touch = event.changedTouches[0];
 
     const deltaX =
-        touchEndX -
-        touchStartX;
-
+        touch.clientX - touchStartX;
 
     const deltaY =
-        touchEndY -
-        touchStartY;
+        touch.clientY - touchStartY;
 
+    const distance =
+        Math.max(
+            Math.abs(deltaX),
+            Math.abs(deltaY)
+        );
 
-    const minimumSwipe =
-        30;
+    const duration =
+        Date.now() - touchStartTime;
 
-
-    /*
-        Ignore tiny touches.
-    */
-
-    if (
-        Math.abs(deltaX) <
-            minimumSwipe &&
-        Math.abs(deltaY) <
-            minimumSwipe
-    ) {
-
+    if (distance < 30 || duration > 1000) {
         return;
-
     }
 
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
 
-    /*
-        Horizontal swipe.
-    */
-
-    if (
-        Math.abs(deltaX) >
-        Math.abs(deltaY)
-    ) {
-
-        if (
+        move(
             deltaX > 0
-        ) {
+                ? "right"
+                : "left"
+        );
 
-            move("right");
+    } else {
 
-        } else {
-
-            move("left");
-
-        }
-
-    }
-
-
-    /*
-        Vertical swipe.
-    */
-
-    else {
-
-        if (
+        move(
             deltaY > 0
-        ) {
-
-            move("down");
-
-        } else {
-
-            move("up");
-
-        }
+                ? "down"
+                : "up"
+        );
 
     }
 
-}
-
-
+}, {
+    passive: false
+});
 /* =========================
    SCORE
 ========================= */
