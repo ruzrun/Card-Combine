@@ -1,102 +1,140 @@
-/* =========================
+/* =========================================================
    CARD COMBINE 🃏
    2048 STYLE
-========================= */
-
-const gameBoard = document.getElementById("gameBoard");
-const scoreDisplay = document.getElementById("score");
-const bestScoreDisplay = document.getElementById("bestScore");
-const comboDisplay = document.getElementById("combo");
-const nextCardDisplay = document.getElementById("nextCard");
-const gameMessage = document.getElementById("gameMessage");
-const restartButton = document.getElementById("restartButton");
-const musicButton = document.getElementById("musicButton");
+========================================================= */
 
 
-/* =========================
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const gameBoard =
+    document.getElementById("gameBoard");
+
+const scoreDisplay =
+    document.getElementById("score");
+
+const bestScoreDisplay =
+    document.getElementById("bestScore");
+
+const comboDisplay =
+    document.getElementById("combo");
+
+const nextCardDisplay =
+    document.getElementById("nextCard");
+
+const gameMessage =
+    document.getElementById("gameMessage");
+
+const restartButton =
+    document.getElementById("restartButton");
+
+const musicButton =
+    document.getElementById("musicButton");
+
+
+/* =========================================================
    SETTINGS
-========================= */
+========================================================= */
 
 const SIZE = 4;
-const CELLS = SIZE * SIZE;
 
-const STARTING_CARDS = 2;
+const CELLS =
+    SIZE * SIZE;
 
 
-/* =========================
+/* =========================================================
    GAME STATE
-========================= */
+========================================================= */
 
-let board = [];
+let board =
+    Array(CELLS).fill(0);
 
 let score = 0;
 
 let bestScore =
-    Number(localStorage.getItem("cardCombineBestScore")) || 0;
+    Number(
+        localStorage.getItem(
+            "cardCombineBestScore"
+        )
+    ) || 0;
 
 let combo = 0;
 
 let gameActive = true;
 
+let isAnimating = false;
+
 let nextCard = 2;
 
 
-/* =========================
+/* =========================================================
    MUSIC
-========================= */
+========================================================= */
 
 const backgroundMusic =
     new Audio("audio/game.mp3");
 
 backgroundMusic.loop = true;
+
 backgroundMusic.volume = 0.25;
 
 let musicEnabled = true;
 
 
-musicButton.addEventListener("click", () => {
+if (musicButton) {
 
-    if (musicEnabled) {
+    musicButton.addEventListener(
+        "click",
+        () => {
 
-        musicEnabled = false;
+            if (musicEnabled) {
 
-        backgroundMusic.pause();
+                musicEnabled = false;
 
-        musicButton.textContent =
-            "🔇 Music Off";
-
-    } else {
-
-        musicEnabled = true;
-
-        backgroundMusic.play()
-            .then(() => {
+                backgroundMusic.pause();
 
                 musicButton.textContent =
-                    "🎵 Music On";
+                    "🔇 Music Off";
 
-            })
-            .catch(() => {
+            } else {
 
-                musicButton.textContent =
-                    "🎵 Start Music";
+                musicEnabled = true;
 
-            });
+                backgroundMusic
+                    .play()
+                    .then(() => {
 
-    }
+                        musicButton.textContent =
+                            "🎵 Music On";
 
-});
+                    })
+                    .catch(() => {
+
+                        musicButton.textContent =
+                            "🎵 Start Music";
+
+                    });
+
+            }
+
+        }
+    );
+
+}
 
 
 /*
-    Browser autoplay policies can
-    block music until interaction.
+    Try to start music after
+    the first user interaction.
 */
 
 document.addEventListener(
     "click",
     startMusicOnce,
-    { once: true }
+    {
+        once: true
+    }
 );
 
 
@@ -106,11 +144,16 @@ function startMusicOnce() {
         return;
     }
 
-    backgroundMusic.play()
+    backgroundMusic
+        .play()
         .then(() => {
 
-            musicButton.textContent =
-                "🎵 Music On";
+            if (musicButton) {
+
+                musicButton.textContent =
+                    "🎵 Music On";
+
+            }
 
         })
         .catch(() => {});
@@ -118,9 +161,9 @@ function startMusicOnce() {
 }
 
 
-/* =========================
+/* =========================================================
    START GAME
-========================= */
+========================================================= */
 
 function startGame() {
 
@@ -133,27 +176,31 @@ function startGame() {
 
     gameActive = true;
 
-    nextCard = generateCard();
+    isAnimating = false;
+
+    nextCard =
+        generateCard();
 
 
-    scoreDisplay.textContent =
-        score;
+    gameBoard.classList.remove(
+        "moving"
+    );
 
-    bestScoreDisplay.textContent =
-        bestScore;
-
-    comboDisplay.textContent =
-        combo;
+    gameBoard.classList.remove(
+        "game-over"
+    );
 
 
     /*
-        Start with two cards.
+        Starting cards.
     */
 
     spawnCard();
 
     spawnCard();
 
+
+    updateScore();
 
     updateNextCard();
 
@@ -166,40 +213,32 @@ function startGame() {
 }
 
 
-/* =========================
+/* =========================================================
    GENERATE CARD
-========================= */
-
-/*
-    The spawn system changes
-    according to the highest
-    card currently on the board.
-
-    Small cards remain common.
-
-    Larger cards become possible
-    as the board gets stronger.
-*/
+========================================================= */
 
 function generateCard() {
 
     const highest =
         getHighestCard();
 
-
     const roll =
         Math.random();
 
 
     /*
+        --------------------------------
         EARLY GAME
-        Mostly 2 and 4.
+        Mostly 2 and 4
+        --------------------------------
     */
 
     if (highest <= 4) {
 
         if (roll < 0.88) {
+
             return 2;
+
         }
 
         return 4;
@@ -208,17 +247,23 @@ function generateCard() {
 
 
     /*
+        --------------------------------
         HIGHEST = 8
+        --------------------------------
     */
 
     if (highest <= 8) {
 
         if (roll < 0.65) {
+
             return 2;
+
         }
 
         if (roll < 0.92) {
+
             return 4;
+
         }
 
         return 8;
@@ -227,21 +272,29 @@ function generateCard() {
 
 
     /*
+        --------------------------------
         HIGHEST = 16
+        --------------------------------
     */
 
     if (highest <= 16) {
 
         if (roll < 0.52) {
+
             return 2;
+
         }
 
         if (roll < 0.82) {
+
             return 4;
+
         }
 
         if (roll < 0.96) {
+
             return 8;
+
         }
 
         return 16;
@@ -250,25 +303,35 @@ function generateCard() {
 
 
     /*
+        --------------------------------
         HIGHEST = 32
+        --------------------------------
     */
 
     if (highest <= 32) {
 
         if (roll < 0.42) {
+
             return 2;
+
         }
 
         if (roll < 0.68) {
+
             return 4;
+
         }
 
         if (roll < 0.88) {
+
             return 8;
+
         }
 
         if (roll < 0.98) {
+
             return 16;
+
         }
 
         return 32;
@@ -277,29 +340,41 @@ function generateCard() {
 
 
     /*
+        --------------------------------
         HIGHEST = 64
+        --------------------------------
     */
 
     if (highest <= 64) {
 
         if (roll < 0.36) {
+
             return 2;
+
         }
 
         if (roll < 0.59) {
+
             return 4;
+
         }
 
         if (roll < 0.79) {
+
             return 8;
+
         }
 
         if (roll < 0.93) {
+
             return 16;
+
         }
 
         if (roll < 0.99) {
+
             return 32;
+
         }
 
         return 64;
@@ -308,12 +383,14 @@ function generateCard() {
 
 
     /*
+        --------------------------------
         HIGHEST = 128+
-        
-        Keep 2, 4, 8, 16 and 32
-        as the main cards.
+        --------------------------------
 
-        Higher cards remain rare.
+        2, 4, 8, 16 and 32
+        remain common.
+
+        Higher cards become rare.
     */
 
     const maxSpawn =
@@ -321,26 +398,30 @@ function generateCard() {
 
 
     const possibleCards = [
+
         2,
         4,
         8,
         16,
         32
+
     ];
 
 
     /*
-        Add larger cards based
-        on the board's highest card.
+        Add higher cards gradually.
     */
 
     let value = 64;
+
 
     while (
         value <= maxSpawn
     ) {
 
-        possibleCards.push(value);
+        possibleCards.push(
+            value
+        );
 
         value *= 2;
 
@@ -348,64 +429,68 @@ function generateCard() {
 
 
     /*
-        Weighted random selection.
-
-        Smaller cards have much
-        greater weight.
+        Weighted random system.
     */
 
     const weightedCards = [];
 
 
-    possibleCards.forEach(card => {
+    possibleCards.forEach(
+        card => {
 
-        let weight;
+            let weight;
 
 
-        if (card <= 4) {
+            if (card <= 4) {
 
-            weight = 30;
+                weight = 30;
 
-        } else if (card === 8) {
+            }
 
-            weight = 18;
+            else if (card === 8) {
 
-        } else if (card === 16) {
+                weight = 18;
 
-            weight = 10;
+            }
 
-        } else if (card === 32) {
+            else if (card === 16) {
 
-            weight = 5;
+                weight = 10;
 
-        } else {
+            }
 
-            /*
-                Higher cards become
-                increasingly rare.
-            */
+            else if (card === 32) {
 
-            weight =
-                Math.max(
-                    1,
-                    8 -
-                    Math.log2(card)
+                weight = 5;
+
+            }
+
+            else {
+
+                weight =
+                    Math.max(
+                        1,
+                        8 -
+                        Math.log2(card)
+                    );
+
+            }
+
+
+            for (
+                let i = 0;
+                i < weight;
+                i++
+            ) {
+
+                weightedCards.push(
+                    card
                 );
 
-        }
-
-
-        for (
-            let i = 0;
-            i < weight;
-            i++
-        ) {
-
-            weightedCards.push(card);
+            }
 
         }
-
-    });
+    );
 
 
     return weightedCards[
@@ -418,9 +503,9 @@ function generateCard() {
 }
 
 
-/* =========================
-   HIGHEST CARD
-========================= */
+/* =========================================================
+   GET HIGHEST CARD
+========================================================= */
 
 function getHighestCard() {
 
@@ -432,9 +517,9 @@ function getHighestCard() {
 }
 
 
-/* =========================
+/* =========================================================
    SPAWN CARD
-========================= */
+========================================================= */
 
 function spawnCard() {
 
@@ -444,9 +529,13 @@ function spawnCard() {
     board.forEach(
         (value, index) => {
 
-            if (value === 0) {
+            if (
+                value === 0
+            ) {
 
-                emptyCells.push(index);
+                emptyCells.push(
+                    index
+                );
 
             }
 
@@ -455,7 +544,7 @@ function spawnCard() {
 
 
     /*
-        No space.
+        No empty space.
     */
 
     if (
@@ -479,8 +568,8 @@ function spawnCard() {
 
 
     /*
-        Use the prepared
-        next card.
+        Put the prepared
+        card onto the board.
     */
 
     board[position] =
@@ -488,8 +577,7 @@ function spawnCard() {
 
 
     /*
-        Prepare another card
-        for the next spawn.
+        Prepare the next card.
     */
 
     nextCard =
@@ -501,22 +589,80 @@ function spawnCard() {
 }
 
 
-/* =========================
+/* =========================================================
    RENDER BOARD
-========================= */
+========================================================= */
 
-#gameBoard {
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    overscroll-behavior: contain;
+function renderBoard() {
+
+    gameBoard.innerHTML = "";
+
+
+    board.forEach(
+        (value, index) => {
+
+            const cell =
+                document.createElement(
+                    "div"
+                );
+
+
+            cell.className =
+                "board-cell";
+
+
+            cell.dataset.index =
+                index;
+
+
+            if (
+                value !== 0
+            ) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "card";
+
+
+                card.dataset.value =
+                    value;
+
+
+                card.textContent =
+                    value;
+
+
+                cell.appendChild(
+                    card
+                );
+
+            } else {
+
+                cell.classList.add(
+                    "empty"
+                );
+
+            }
+
+
+            gameBoard.appendChild(
+                cell
+            );
+
+        }
+    );
+
 }
 
 
-
-/* =========================
-   ANIMATED MOVE
-========================= */
+/* =========================================================
+   MOVE
+========================================================= */
 
 function move(direction) {
 
@@ -524,51 +670,66 @@ function move(direction) {
         return;
     }
 
-    /*
-        Don't allow another move
-        while cards are animating.
-    */
 
-    if (gameBoard.classList.contains("moving")) {
+    if (isAnimating) {
         return;
     }
 
-    gameBoard.classList.add("moving");
+
+    isAnimating = true;
+
+    gameBoard.classList.add(
+        "moving"
+    );
 
 
     /*
-        Save the board before moving.
+        Save the board before
+        the move.
     */
 
-    const oldBoard = [...board];
+    const oldBoard =
+        [...board];
 
 
     /*
-        Calculate the new board
-        and remember every card's
-        movement.
+        Calculate movement.
     */
 
     const movement =
-        calculateMove(direction);
+        calculateMove(
+            direction
+        );
 
 
     /*
-        Nothing changes?
-
-        IMPORTANT:
-        We STILL spawn a card,
-        because that's our custom rule.
+        NOTHING MOVED
+        --------------------------------
+        But your custom rule says
+        a card MUST still spawn.
     */
 
-    if (!movement.changed) {
+    if (
+        !movement.changed
+    ) {
+
+        const boardBeforeSpawn =
+            [...board];
+
 
         spawnCard();
 
+
+        const boardAfterSpawn =
+            [...board];
+
+
         combo = 0;
 
+
         gameMessage.textContent =
-            "No movement... but a new card appeared! 🃏";
+            "A new card appeared 🃏";
+
 
         updateScore();
 
@@ -576,41 +737,738 @@ function move(direction) {
 
         renderBoard();
 
-        gameBoard.classList.remove("moving");
 
-        if (isGameOver()) {
+        animateNewCard(
+            boardBeforeSpawn,
+            boardAfterSpawn
+        );
+
+
+        isAnimating = false;
+
+        gameBoard.classList.remove(
+            "moving"
+        );
+
+
+        if (
+            isGameOver()
+        ) {
+
             endGame();
+
         }
 
+
         return;
+
     }
 
 
     /*
-        Show the old board first.
+        Keep OLD board visible
+        during animation.
     */
 
-    board = oldBoard;
+    board =
+        oldBoard;
+
 
     renderBoard();
 
 
     /*
-        Animate the cards.
+        Animate cards.
     */
 
     animateMovement(
-        movement,
-        direction
+        movement
     );
 
 }
 
-/* =========================
-   GET LINES
-========================= */
 
-function getLines(direction) {
+/* =========================================================
+   CALCULATE MOVE
+========================================================= */
+
+function calculateMove(direction) {
+
+    const newBoard =
+        Array(CELLS).fill(0);
+
+    const movements = [];
+
+    let changed = false;
+
+    let merged = 0;
+
+
+    const lines =
+        getLines(
+            direction
+        );
+
+
+    lines.forEach(
+        line => {
+
+            const cards = [];
+
+
+            /*
+                Collect cards.
+            */
+
+            line.forEach(
+                index => {
+
+                    if (
+                        board[index] !== 0
+                    ) {
+
+                        cards.push({
+                            value:
+                                board[index],
+
+                            from:
+                                index
+                        });
+
+                    }
+
+                }
+            );
+
+
+            let target =
+                0;
+
+
+            /*
+                Process cards.
+            */
+
+            for (
+                let i = 0;
+                i < cards.length;
+                i++
+            ) {
+
+                const current =
+                    cards[i];
+
+
+                /*
+                    MERGE
+                */
+
+                if (
+                    i + 1 <
+                    cards.length &&
+
+                    current.value ===
+                    cards[i + 1].value
+                ) {
+
+                    const next =
+                        cards[i + 1];
+
+
+                    const destination =
+                        line[target];
+
+
+                    const mergedValue =
+                        current.value * 2;
+
+
+                    movements.push({
+
+                        from:
+                            current.from,
+
+                        to:
+                            destination,
+
+                        value:
+                            current.value,
+
+                        merge:
+                            true,
+
+                        mergedValue:
+                            mergedValue
+
+                    });
+
+
+                    movements.push({
+
+                        from:
+                            next.from,
+
+                        to:
+                            destination,
+
+                        value:
+                            next.value,
+
+                        merge:
+                            true,
+
+                        mergedValue:
+                            mergedValue
+
+                    });
+
+
+                    newBoard[
+                        destination
+                    ] =
+                        mergedValue;
+
+
+                    score +=
+                        mergedValue;
+
+
+                    merged++;
+
+                    changed = true;
+
+
+                    /*
+                        Skip second
+                        card.
+                    */
+
+                    i++;
+
+
+                    target++;
+
+                }
+
+
+                /*
+                    NORMAL MOVE
+                */
+
+                else {
+
+                    const destination =
+                        line[target];
+
+
+                    movements.push({
+
+                        from:
+                            current.from,
+
+                        to:
+                            destination,
+
+                        value:
+                            current.value,
+
+                        merge:
+                            false
+
+                    });
+
+
+                    newBoard[
+                        destination
+                    ] =
+                        current.value;
+
+
+                    if (
+                        current.from !==
+                        destination
+                    ) {
+
+                        changed = true;
+
+                    }
+
+
+                    target++;
+
+                }
+
+            }
+
+        }
+    );
+
+
+    return {
+
+        board:
+            newBoard,
+
+        movements:
+            movements,
+
+        changed:
+            changed,
+
+        merged:
+            merged
+
+    };
+
+}
+
+
+/* =========================================================
+   ANIMATE MOVEMENT
+========================================================= */
+
+function animateMovement(
+    movement
+) {
+
+    const cells =
+        [
+            ...gameBoard.children
+        ];
+
+
+    const boardRect =
+        gameBoard.getBoundingClientRect();
+
+
+    const movingCards = [];
+
+
+    /*
+        Create a temporary visual
+        card for every moving card.
+    */
+
+    movement.movements.forEach(
+        item => {
+
+            const sourceCell =
+                cells[item.from];
+
+
+            if (!sourceCell) {
+                return;
+            }
+
+
+            const sourceRect =
+                sourceCell.getBoundingClientRect();
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "moving-card";
+
+
+            card.textContent =
+                item.value;
+
+
+            card.style.width =
+                `${sourceRect.width}px`;
+
+
+            card.style.height =
+                `${sourceRect.height}px`;
+
+
+            card.style.left =
+                `${
+                    sourceRect.left -
+                    boardRect.left
+                }px`;
+
+
+            card.style.top =
+                `${
+                    sourceRect.top -
+                    boardRect.top
+                }px`;
+
+
+            /*
+                Put it above the board.
+            */
+
+            gameBoard.appendChild(
+                card
+            );
+
+
+            movingCards.push({
+
+                element:
+                    card,
+
+                item:
+                    item
+
+            });
+
+        }
+    );
+
+
+    /*
+        Force browser to register
+        starting positions.
+    */
+
+    void gameBoard.offsetWidth;
+
+
+    /*
+        Start movement on next frame.
+    */
+
+    requestAnimationFrame(
+        () => {
+
+            movingCards.forEach(
+                moving => {
+
+                    const item =
+                        moving.item;
+
+
+                    const startCell =
+                        cells[item.from];
+
+
+                    const endCell =
+                        cells[item.to];
+
+
+                    if (
+                        !startCell ||
+                        !endCell
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const start =
+                        startCell
+                            .getBoundingClientRect();
+
+
+                    const end =
+                        endCell
+                            .getBoundingClientRect();
+
+
+                    const x =
+                        end.left -
+                        start.left;
+
+
+                    const y =
+                        end.top -
+                        start.top;
+
+
+                    moving.element.style.transform =
+                        `translate(${x}px, ${y}px)`;
+
+                }
+            );
+
+        }
+    );
+
+
+    /*
+        Wait for movement.
+    */
+
+    setTimeout(
+        () => {
+
+            /*
+                Remove temporary
+                moving cards.
+            */
+
+            movingCards.forEach(
+                moving => {
+
+                    moving.element.remove();
+
+                }
+            );
+
+
+            /*
+                Apply final board.
+            */
+
+            board =
+                movement.board;
+
+
+            /*
+                Remember board before
+                spawning.
+            */
+
+            const boardBeforeSpawn =
+                [...board];
+
+
+            /*
+                ALWAYS spawn a card.
+            */
+
+            spawnCard();
+
+
+            /*
+                Remember board after
+                spawning.
+            */
+
+            const boardAfterSpawn =
+                [...board];
+
+
+            /*
+                Combo.
+            */
+
+            if (
+                movement.merged > 0
+            ) {
+
+                combo =
+                    movement.merged;
+
+
+                gameMessage.textContent =
+                    `✨ COMBO ×${combo}!`;
+
+            } else {
+
+                combo = 0;
+
+
+                gameMessage.textContent =
+                    "Cards shifted ✨";
+
+            }
+
+
+            updateScore();
+
+            updateNextCard();
+
+
+            /*
+                Render final board.
+            */
+
+            renderBoard();
+
+
+            /*
+                Animate merged cards.
+            */
+
+            animateMergedCards(
+                movement
+            );
+
+
+            /*
+                Animate newly spawned card.
+            */
+
+            animateNewCard(
+                boardBeforeSpawn,
+                boardAfterSpawn
+            );
+
+
+            isAnimating = false;
+
+            gameBoard.classList.remove(
+                "moving"
+            );
+
+
+            /*
+                Check game over.
+            */
+
+            if (
+                isGameOver()
+            ) {
+
+                endGame();
+
+            }
+
+        },
+        180
+    );
+
+}
+
+
+/* =========================================================
+   MERGE ANIMATION
+========================================================= */
+
+function animateMergedCards(
+    movement
+) {
+
+    const mergedIndexes = [];
+
+
+    movement.movements.forEach(
+        item => {
+
+            if (
+                item.merge
+            ) {
+
+                if (
+                    !mergedIndexes.includes(
+                        item.to
+                    )
+                ) {
+
+                    mergedIndexes.push(
+                        item.to
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+    mergedIndexes.forEach(
+        index => {
+
+            const cell =
+                gameBoard.children[
+                    index
+                ];
+
+
+            if (!cell) {
+                return;
+            }
+
+
+            const card =
+                cell.querySelector(
+                    ".card"
+                );
+
+
+            if (!card) {
+                return;
+            }
+
+
+            card.classList.add(
+                "merged-card"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NEW CARD ANIMATION
+========================================================= */
+
+function animateNewCard(
+    oldBoard,
+    newBoard
+) {
+
+    for (
+        let i = 0;
+        i < CELLS;
+        i++
+    ) {
+
+        if (
+            oldBoard[i] === 0 &&
+            newBoard[i] !== 0
+        ) {
+
+            const cell =
+                gameBoard.children[
+                    i
+                ];
+
+
+            if (!cell) {
+                continue;
+            }
+
+
+            const card =
+                cell.querySelector(
+                    ".card"
+                );
+
+
+            if (card) {
+
+                card.classList.add(
+                    "new-card"
+                );
+
+            }
+
+
+            /*
+                Only one card is spawned
+                per turn.
+            */
+
+            break;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   GET LINES
+========================================================= */
+
+function getLines(
+    direction
+) {
 
     const lines = [];
 
@@ -645,7 +1503,9 @@ function getLines(direction) {
             }
 
 
-            lines.push(line);
+            lines.push(
+                line
+            );
 
         }
 
@@ -670,7 +1530,8 @@ function getLines(direction) {
 
 
             for (
-                let col = SIZE - 1;
+                let col =
+                    SIZE - 1;
                 col >= 0;
                 col--
             ) {
@@ -682,7 +1543,9 @@ function getLines(direction) {
             }
 
 
-            lines.push(line);
+            lines.push(
+                line
+            );
 
         }
 
@@ -719,7 +1582,9 @@ function getLines(direction) {
             }
 
 
-            lines.push(line);
+            lines.push(
+                line
+            );
 
         }
 
@@ -744,7 +1609,8 @@ function getLines(direction) {
 
 
             for (
-                let row = SIZE - 1;
+                let row =
+                    SIZE - 1;
                 row >= 0;
                 row--
             ) {
@@ -756,7 +1622,9 @@ function getLines(direction) {
             }
 
 
-            lines.push(line);
+            lines.push(
+                line
+            );
 
         }
 
@@ -768,9 +1636,9 @@ function getLines(direction) {
 }
 
 
-/* =========================
+/* =========================================================
    KEYBOARD CONTROLS
-========================= */
+========================================================= */
 
 document.addEventListener(
     "keydown",
@@ -831,83 +1699,186 @@ document.addEventListener(
 );
 
 
+/* =========================================================
+   MOBILE SWIPE
+========================================================= */
+
 let touchStartX = 0;
+
 let touchStartY = 0;
+
 let touchStartTime = 0;
 
-gameBoard.addEventListener("touchstart", event => {
 
-    const touch = event.changedTouches[0];
+gameBoard.addEventListener(
+    "touchstart",
+    event => {
 
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-    touchStartTime = Date.now();
+        const touch =
+            event.changedTouches[0];
 
-}, {
-    passive: false
-});
 
-gameBoard.addEventListener("touchmove", event => {
+        touchStartX =
+            touch.clientX;
 
-    event.preventDefault();
 
-}, {
-    passive: false
-});
+        touchStartY =
+            touch.clientY;
 
-gameBoard.addEventListener("touchend", event => {
 
-    const touch = event.changedTouches[0];
+        touchStartTime =
+            Date.now();
 
-    const deltaX =
-        touch.clientX - touchStartX;
+    },
+    {
+        passive: false
+    }
+);
 
-    const deltaY =
-        touch.clientY - touchStartY;
 
-    const distance =
-        Math.max(
-            Math.abs(deltaX),
+gameBoard.addEventListener(
+    "touchmove",
+    event => {
+
+        /*
+            Prevent browser scrolling
+            and pull-to-refresh.
+        */
+
+        event.preventDefault();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+gameBoard.addEventListener(
+    "touchend",
+    event => {
+
+        const touch =
+            event.changedTouches[0];
+
+
+        const deltaX =
+            touch.clientX -
+            touchStartX;
+
+
+        const deltaY =
+            touch.clientY -
+            touchStartY;
+
+
+        const distance =
+            Math.max(
+                Math.abs(deltaX),
+                Math.abs(deltaY)
+            );
+
+
+        const duration =
+            Date.now() -
+            touchStartTime;
+
+
+        /*
+            Ignore tiny movement.
+        */
+
+        if (
+            distance < 30
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+            Ignore extremely long
+            accidental touches.
+        */
+
+        if (
+            duration > 1000
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+            Horizontal swipe.
+        */
+
+        if (
+            Math.abs(deltaX) >
             Math.abs(deltaY)
-        );
+        ) {
 
-    const duration =
-        Date.now() - touchStartTime;
+            if (
+                deltaX > 0
+            ) {
 
-    if (distance < 30 || duration > 1000) {
-        return;
+                move("right");
+
+            } else {
+
+                move("left");
+
+            }
+
+        }
+
+
+        /*
+            Vertical swipe.
+        */
+
+        else {
+
+            if (
+                deltaY > 0
+            ) {
+
+                move("down");
+
+            } else {
+
+                move("up");
+
+            }
+
+        }
+
+    },
+    {
+        passive: false
     }
+);
 
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
 
-        move(
-            deltaX > 0
-                ? "right"
-                : "left"
-        );
-
-    } else {
-
-        move(
-            deltaY > 0
-                ? "down"
-                : "up"
-        );
-
-    }
-
-}, {
-    passive: false
-});
-/* =========================
+/* =========================================================
    SCORE
-========================= */
+========================================================= */
 
 function updateScore() {
 
-    scoreDisplay.textContent =
-        score;
+    if (scoreDisplay) {
 
+        scoreDisplay.textContent =
+            score;
+
+    }
+
+
+    /*
+        Save best score.
+    */
 
     if (
         score > bestScore
@@ -925,37 +1896,51 @@ function updateScore() {
     }
 
 
-    bestScoreDisplay.textContent =
-        bestScore;
+    if (bestScoreDisplay) {
+
+        bestScoreDisplay.textContent =
+            bestScore;
+
+    }
 
 
-    comboDisplay.textContent =
-        combo;
+    if (comboDisplay) {
+
+        comboDisplay.textContent =
+            combo;
+
+    }
 
 }
 
 
-/* =========================
+/* =========================================================
    NEXT CARD
-========================= */
+========================================================= */
 
 function updateNextCard() {
 
-    nextCardDisplay.textContent =
-        nextCard;
+    if (
+        nextCardDisplay
+    ) {
+
+        nextCardDisplay.textContent =
+            nextCard;
+
+    }
 
 }
 
 
-/* =========================
-   GAME OVER
-========================= */
+/* =========================================================
+   GAME OVER CHECK
+========================================================= */
 
 function isGameOver() {
 
     /*
-        If there is an empty
-        cell, the game continues.
+        If there is an empty cell,
+        the game can continue.
     */
 
     if (
@@ -968,7 +1953,7 @@ function isGameOver() {
 
 
     /*
-        Check horizontal pairs.
+        Check horizontal matches.
     */
 
     for (
@@ -1010,7 +1995,7 @@ function isGameOver() {
 
 
     /*
-        Check vertical pairs.
+        Check vertical matches.
     */
 
     for (
@@ -1056,13 +2041,20 @@ function isGameOver() {
 }
 
 
-/* =========================
+/* =========================================================
    GAME OVER
-========================= */
+========================================================= */
 
 function endGame() {
 
     gameActive = false;
+
+    isAnimating = false;
+
+
+    gameBoard.classList.remove(
+        "moving"
+    );
 
 
     gameBoard.classList.add(
@@ -1076,506 +2068,26 @@ function endGame() {
 }
 
 
-/* =========================
+/* =========================================================
    RESTART
-========================= */
+========================================================= */
 
-restartButton.addEventListener(
-    "click",
-    () => {
+if (restartButton) {
 
-        gameBoard.classList.remove(
-            "game-over"
-        );
+    restartButton.addEventListener(
+        "click",
+        () => {
+
+            startGame();
+
+        }
+    );
+
+}
 
 
-        startGame();
-
-    }
-);
-
-
-/* =========================
+/* =========================================================
    START
-========================= */
+========================================================= */
 
 startGame();
-
-/* =========================
-   CALCULATE MOVE
-========================= */
-
-function calculateMove(direction) {
-
-    const newBoard =
-        Array(CELLS).fill(0);
-
-    const movements = [];
-
-    let changed = false;
-
-    let mergedCount = 0;
-
-
-    const lines =
-        getLines(direction);
-
-
-    lines.forEach(line => {
-
-        /*
-            Get all cards that
-            actually exist.
-        */
-
-        const cards = [];
-
-        line.forEach(index => {
-
-            if (board[index] !== 0) {
-
-                cards.push({
-                    value: board[index],
-                    from: index
-                });
-
-            }
-
-        });
-
-
-        /*
-            Process this line.
-        */
-
-        let targetPosition = 0;
-
-
-        for (
-            let i = 0;
-            i < cards.length;
-            i++
-        ) {
-
-            const current =
-                cards[i];
-
-
-            /*
-                Check if this card can
-                merge with the next card.
-            */
-
-            if (
-                i + 1 < cards.length &&
-                current.value ===
-                cards[i + 1].value
-            ) {
-
-                const next =
-                    cards[i + 1];
-
-
-                const destination =
-                    line[targetPosition];
-
-
-                const mergedValue =
-                    current.value * 2;
-
-
-                /*
-                    First card moves
-                    to destination.
-                */
-
-                movements.push({
-                    from: current.from,
-                    to: destination,
-                    value: current.value,
-                    merge: true,
-                    mergedValue: mergedValue
-                });
-
-
-                /*
-                    Second card also moves
-                    to the same destination.
-                */
-
-                movements.push({
-                    from: next.from,
-                    to: destination,
-                    value: next.value,
-                    merge: true,
-                    mergedValue: mergedValue
-                });
-
-
-                newBoard[destination] =
-                    mergedValue;
-
-
-                score += mergedValue;
-
-                mergedCount++;
-
-                changed = true;
-
-
-                i++;
-
-                targetPosition++;
-
-            } else {
-
-                const destination =
-                    line[targetPosition];
-
-
-                movements.push({
-                    from: current.from,
-                    to: destination,
-                    value: current.value,
-                    merge: false
-                });
-
-
-                newBoard[destination] =
-                    current.value;
-
-
-                if (
-                    current.from !==
-                    destination
-                ) {
-
-                    changed = true;
-
-                }
-
-
-                targetPosition++;
-
-            }
-
-        }
-
-    });
-
-
-    return {
-        board: newBoard,
-        movements: movements,
-        changed: changed,
-        merged: mergedCount
-    };
-
-}
-
-/* =========================
-   ANIMATE MOVEMENT
-========================= */
-
-function animateMovement(
-    movement,
-    direction
-) {
-
-    const cells =
-        [...gameBoard.children];
-
-
-    const boardRect =
-        gameBoard.getBoundingClientRect();
-
-
-    /*
-        Calculate the size of
-        each board cell.
-    */
-
-    const firstCell =
-        cells[0].getBoundingClientRect();
-
-
-    const cellWidth =
-        firstCell.width;
-
-
-    const cellHeight =
-        firstCell.height;
-
-
-    /*
-        Create visual copies
-        of every moving card.
-    */
-
-    const movingCards = [];
-
-
-    movement.movements.forEach(
-        item => {
-
-            const sourceCell =
-                cells[item.from];
-
-
-            const sourceRect =
-                sourceCell.getBoundingClientRect();
-
-
-            const card =
-                document.createElement("div");
-
-
-            card.className =
-                "moving-card";
-
-
-            card.textContent =
-                item.value;
-
-
-            card.style.width =
-                `${sourceRect.width}px`;
-
-
-            card.style.height =
-                `${sourceRect.height}px`;
-
-
-            /*
-                Position the card
-                exactly over its
-                original cell.
-            */
-
-            card.style.left =
-                `${sourceRect.left - boardRect.left}px`;
-
-
-            card.style.top =
-                `${sourceRect.top - boardRect.top}px`;
-
-
-            gameBoard.appendChild(card);
-
-
-            movingCards.push({
-                element: card,
-                item: item
-            });
-
-        }
-    );
-
-
-    /*
-        Hide the normal board cards
-        while the animation happens.
-    */
-
-    cells.forEach(cell => {
-
-        const normalCard =
-            cell.querySelector(".card");
-
-        if (normalCard) {
-
-            normalCard.style.visibility =
-                "hidden";
-
-        }
-
-    });
-
-
-    /*
-        Force browser to register
-        starting positions.
-    */
-
-    void gameBoard.offsetWidth;
-
-
-    /*
-        Move every card to its
-        destination.
-    */
-
-    movingCards.forEach(
-        moving => {
-
-            const item =
-                moving.item;
-
-
-            const fromRow =
-                Math.floor(
-                    item.from / SIZE
-                );
-
-
-            const fromCol =
-                item.from % SIZE;
-
-
-            const toRow =
-                Math.floor(
-                    item.to / SIZE
-                );
-
-
-            const toCol =
-                item.to % SIZE;
-
-
-            const moveX =
-                (toCol - fromCol) *
-                cellWidth;
-
-
-            const moveY =
-                (toRow - fromRow) *
-                cellHeight;
-
-
-            moving.element.style.transform =
-                `translate(${moveX}px, ${moveY}px)`;
-
-        }
-    );
-
-
-    /*
-        Wait for the movement
-        animation to finish.
-    */
-
-    setTimeout(() => {
-
-        /*
-            Now display the new board.
-        */
-
-        board =
-            movement.board;
-
-
-        /*
-            Spawn a card AFTER
-            the movement finishes.
-        */
-
-        spawnCard();
-
-
-        /*
-            Update combo.
-        */
-
-        if (
-            movement.merged > 0
-        ) {
-
-            combo =
-                movement.merged;
-
-
-            gameMessage.textContent =
-                `✨ COMBO ×${combo}!`;
-
-        } else {
-
-            combo = 0;
-
-            gameMessage.textContent =
-                "Cards shifted ✨";
-
-        }
-
-
-        updateScore();
-
-        updateNextCard();
-
-
-        /*
-            Render the final board.
-        */
-
-        renderBoard();
-
-
-        /*
-            Find cards that just
-            appeared and give them
-            a small animation.
-        */
-
-        const finalCells =
-            [...gameBoard.children];
-
-
-        const newCardIndex =
-            board.findIndex(
-                value =>
-                    value !== 0 &&
-                    !movement.movements.some(
-                        item =>
-                            item.to ===
-                            board.indexOf(value)
-                    )
-            );
-
-
-        /*
-            Give the newly spawned
-            card the pop animation.
-        */
-
-        if (
-            newCardIndex !== -1
-        ) {
-
-            const newCard =
-                finalCells[
-                    newCardIndex
-                ]?.querySelector(".card");
-
-
-            if (newCard) {
-
-                newCard.classList.add(
-                    "new-card"
-                );
-
-            }
-
-        }
-
-
-        /*
-            Remove moving state.
-        */
-
-        gameBoard.classList.remove(
-            "moving"
-        );
-
-
-        /*
-            Check game over.
-        */
-
-        if (isGameOver()) {
-
-            endGame();
-
-        }
-
-    }, 160);
-
-}
