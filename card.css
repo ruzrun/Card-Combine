@@ -430,109 +430,84 @@ h1 {
    DIFFERENT CARD SIZES
 ========================================================= */
 
-.card[data-value="2"] {
-    background:
-        rgba(250, 147, 199, 0.78);
+.card[data-value="2"],
+.moving-card[data-value="2"] {
+    background: #fa93c7;
+    box-shadow: 0 0 9px rgba(250, 147, 199, 0.7);
 }
 
-
-.card[data-value="4"] {
-    background:
-        rgba(250, 147, 199, 0.86);
+.card[data-value="4"],
+.moving-card[data-value="4"] {
+    background: #ff9f68;
+    box-shadow: 0 0 9px rgba(255, 159, 104, 0.7);
 }
 
-
-.card[data-value="8"] {
-    background:
-        rgba(255, 176, 210, 0.9);
+.card[data-value="8"],
+.moving-card[data-value="8"] {
+    background: #ffd166;
+    box-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
 }
 
-
-.card[data-value="16"] {
-    background:
-        rgba(255, 194, 218, 0.92);
+.card[data-value="16"],
+.moving-card[data-value="16"] {
+    background: #7bdff2;
+    box-shadow: 0 0 10px rgba(123, 223, 242, 0.7);
 }
 
-
-.card[data-value="32"] {
-    background:
-        rgba(255, 211, 226, 0.94);
-
-    color:
-        #8d4166;
+.card[data-value="32"],
+.moving-card[data-value="32"] {
+    background: #4facfe;
+    box-shadow: 0 0 11px rgba(79, 172, 254, 0.75);
 }
 
-
-.card[data-value="64"] {
-    background:
-        rgba(255, 221, 154, 0.95);
-
-    color:
-        #7a5710;
-
-    box-shadow:
-        0 0 14px
-        rgba(255, 215, 0, 0.65);
+.card[data-value="64"],
+.moving-card[data-value="64"] {
+    background: #43e97b;
+    box-shadow: 0 0 12px rgba(67, 233, 123, 0.75);
 }
-
 
 .card[data-value="128"],
-.card[data-value="256"] {
-    background:
-        rgba(255, 215, 120, 0.96);
-
-    color:
-        #684d00;
-
-    box-shadow:
-        0 0 16px
-        rgba(255, 215, 0, 0.75);
+.moving-card[data-value="128"] {
+    background: #a78bfa;
+    box-shadow: 0 0 13px rgba(167, 139, 250, 0.8);
 }
 
+.card[data-value="256"],
+.moving-card[data-value="256"] {
+    background: #c084fc;
+    box-shadow: 0 0 14px rgba(192, 132, 252, 0.8);
+}
 
 .card[data-value="512"],
-.card[data-value="1024"] {
-    background:
-        rgba(255, 235, 150, 0.98);
-
-    color:
-        #5c4500;
-
-    box-shadow:
-        0 0 18px
-        rgba(255, 220, 80, 0.85);
+.moving-card[data-value="512"] {
+    background: #f472b6;
+    box-shadow: 0 0 15px rgba(244, 114, 182, 0.8);
 }
 
-
-/*
-    Larger numbers get slightly
-    smaller text so they remain
-    inside the card.
-*/
+.card[data-value="1024"],
+.moving-card[data-value="1024"] {
+    background: #fb7185;
+    box-shadow: 0 0 16px rgba(251, 113, 133, 0.85);
+}
 
 .card[data-value="2048"],
-.card[data-value="4096"],
-.card[data-value="8192"],
-.card[data-value="16384"],
-.card[data-value="32768"] {
-    font-size:
-        clamp(
-            14px,
-            4vw,
-            24px
-        );
-
-    background:
-        rgba(255, 236, 170, 0.98);
-
-    color:
-        #5b4600;
-
-    box-shadow:
-        0 0 20px
-        rgba(255, 220, 80, 0.9);
+.moving-card[data-value="2048"] {
+    background: #ffd700;
+    color: #654f00;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.9);
 }
 
+.card[data-value="4096"],
+.moving-card[data-value="4096"],
+.card[data-value="8192"],
+.moving-card[data-value="8192"],
+.card[data-value="16384"],
+.moving-card[data-value="16384"],
+.card[data-value="32768"],
+.moving-card[data-value="32768"] {
+    background: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.9);
+}
 
 /* =========================================================
    MOVING CARD
