@@ -762,38 +762,60 @@ button:active {
 ========================================================= */
 
 .back-button {
-    display:
-        block;
+    position: fixed;
 
-    margin:
-        20px auto 0;
+    top: 18px;
+    left: 18px;
 
-    width:
-        fit-content;
+    z-index: 9999;
 
-    padding:
-        10px 20px;
+    padding: 10px 16px;
 
-    border-radius:
-        10px;
+    border-radius: 25px;
 
     background:
+        rgba(0, 0, 0, 0.35);
+
+    color: white;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.3);
+
+    text-decoration: none;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 14px;
+
+    box-shadow:
+        0 6px 20px
         rgba(0, 0, 0, 0.25);
 
-    color:
-        white;
-
-    text-decoration:
-        none;
+    backdrop-filter:
+        blur(8px);
 
     transition:
-        0.3s;
+        transform 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
-
 .back-button:hover {
+    transform:
+        translateY(-2px)
+        scale(1.03);
+
     background:
-        rgba(0, 0, 0, 0.5);
+        rgba(255, 255, 255, 0.25);
+
+    color: white;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 0, 0, 0.3);
 }
 
 
