@@ -521,73 +521,54 @@ function getHighestCard() {
    SPAWN CARD
 ========================================================= */
 
+function getRandomSpawnValue() {
+
+    const random = Math.random();
+
+    if (random < 0.70) {
+        return 2;
+    }
+
+    if (random < 0.90) {
+        return 4;
+    }
+
+    return 8;
+}
+
+
 function spawnCard() {
 
     const emptyCells = [];
 
+    for (let i = 0; i < board.length; i++) {
 
-    board.forEach(
-        (value, index) => {
-
-            if (
-                value === 0
-            ) {
-
-                emptyCells.push(
-                    index
-                );
-
-            }
-
+        if (board[i] === 0) {
+            emptyCells.push(i);
         }
-    );
 
+    }
 
-    /*
-        No empty space.
-    */
-
-    if (
-        emptyCells.length === 0
-    ) {
-
+    if (emptyCells.length === 0) {
         return false;
-
     }
 
 
     const randomIndex =
-        Math.floor(
-            Math.random() *
-            emptyCells.length
-        );
+        emptyCells[
+            Math.floor(
+                Math.random() *
+                emptyCells.length
+            )
+        ];
 
 
-    const position =
-        emptyCells[randomIndex];
-
-
-    /*
-        Put the prepared
-        card onto the board.
-    */
-
-    board[position] =
-        nextCard;
-
-
-    /*
-        Prepare the next card.
-    */
-
-    nextCard =
-        generateCard();
+    board[randomIndex] =
+        getRandomSpawnValue();
 
 
     return true;
-
 }
-
 
 /* =========================================================
    RENDER BOARD
