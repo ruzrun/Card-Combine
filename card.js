@@ -1898,15 +1898,18 @@ function updateScore() {
 
 function updateNextCard() {
 
-    if (
-        nextCardDisplay
-    ) {
+    const nextCardElement =
+        document.getElementById("nextCard");
 
-        nextCardDisplay.textContent =
-            nextCard;
-
+    if (!nextCardElement) {
+        return;
     }
 
+    nextCardElement.textContent =
+        nextCard;
+
+    nextCardElement.dataset.value =
+        nextCard;
 }
 
 
