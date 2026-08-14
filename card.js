@@ -521,6 +521,8 @@ function getHighestCard() {
    SPAWN CARD
 ========================================================= */
 
+let nextCard = getRandomSpawnValue();
+
 function getRandomSpawnValue() {
 
     const random = Math.random();
@@ -563,8 +565,15 @@ function spawnCard() {
         ];
 
 
-    board[randomIndex] =
-        getRandomSpawnValue();
+    // Spawn the card that was being displayed
+    board[randomIndex] = nextCard;
+
+
+    // Immediately choose the NEXT card
+    nextCard = getRandomSpawnValue();
+
+
+    updateNextCard();
 
 
     return true;
