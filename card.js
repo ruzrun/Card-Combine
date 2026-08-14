@@ -65,8 +65,7 @@ let gameActive = true;
 
 let isAnimating = false;
 
-let nextCard = 2;
-
+let nextCard = getRandomSpawnValue();
 
 /* =========================================================
    MUSIC
@@ -521,7 +520,6 @@ function getHighestCard() {
    SPAWN CARD
 ========================================================= */
 
-let nextCard = getRandomSpawnValue();
 
 function getRandomSpawnValue() {
 
